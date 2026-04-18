@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Sign Up — Amol Soft Developing Industry</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAa_XwFUGvozo9q002vpCc2Cv9qN8Ey7E4",
+  authDomain: "amolsoft-ada6b.firebaseapp.com",
+  projectId: "amolsoft-ada6b",
+  storageBucket: "amolsoft-ada6b.firebasestorage.app",
+  messagingSenderId: "878640194459",
+  appId: "1:878640194459:web:435be03fd3b828014ef73e"
+};
+firebase.initializeApp(firebaseConfig);
+firebase.firestore().enablePersistence({synchronizeTabs:true}).catch(()=>{});
+
+const FAST2SMS_KEY = 'yZIH31o0GU7NfWVD5OrXnvcw29PJgRaibMBxpmh6QkqtslTeuF4VZIwmJ6pB8lqfaskb1i0RYGAQSXvP';
+const TEAM_SMS     = '9021597349,8208519190,8459484110';
+// Trusted team emails — no invite code needed
+const TRUSTED_TEAM = [
+  'siddhartdahatode62@gmail.com',
+  'siddharthdahatonde62@gmail.com',
+  'unknownviber99@gmail.com'  // Pranav
+];
+</script>
+<style>
+:root{--bg:#050810;--card:#111527;--border:rgba(99,179,255,.12);--blue:#4f9fff;--teal:#00e5c8;--gold:#f5c842;--text:#eef2ff;--muted:#8899bb;--grad:linear-gradient(135deg,#4f9fff,#00e5c8);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;}
+.orb{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;}
+.orb1{width:500px;height:500px;background:rgba(0,229,200,.05);top:-100px;left:-100px;}
+.orb2{width:400px;height:400px;background:rgba(79,159,255,.06);bottom:-80px;right:-80px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:28px;padding:2.8rem;width:100%;max-width:480px;position:relative;overflow:hidden;z-index:1;animation:slideUp .5s ease both;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad);}
+.logo{display:flex;align-items:center;gap:.7rem;margin-bottom:1.8rem;}
+.logo-icon{width:40px;height:40px;background:var(--grad);border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#050810;font-size:.95rem;}
+.logo-text{font-family:'Playfair Display',serif;font-weight:700;}
+.logo-text span{color:var(--blue);}
+h2{font-family:'Playfair Display',serif;font-size:1.75rem;font-weight:800;margin-bottom:.3rem;}
+.sub{color:var(--muted);font-size:.85rem;margin-bottom:1.8rem;}
+.roles{display:flex;background:rgba(255,255,255,.04);border-radius:10px;padding:.3rem;margin-bottom:1.5rem;}
+.role{flex:1;padding:.65rem;text-align:center;border-radius:8px;cursor:pointer;transition:all .3s;color:var(--muted);font-size:.84rem;}
+.role.on{background:var(--blue);color:#050810;font-weight:600;}
+.role-card{background:rgba(79,159,255,.04);border:1px solid rgba(79,159,255,.15);border-radius:10px;padding:.8rem 1rem;margin-bottom:1rem;display:none;}
+.role-card.show{display:block;}
+.role-card p{color:var(--gold);font-size:.82rem;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;}
+.fg{display:flex;flex-direction:column;gap:.4rem;margin-bottom:.8rem;}
+.fg.full{grid-column:1/-1;}
+label{font-size:.74rem;color:var(--muted);letter-spacing:.05em;}
+input{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;padding:.72rem 1rem;color:var(--text);font-family:'Outfit',sans-serif;font-size:.88rem;outline:none;width:100%;transition:all .3s;}
+input:focus{border-color:rgba(79,159,255,.5);box-shadow:0 0 0 3px rgba(79,159,255,.07);}
+.strength{height:3px;border-radius:2px;background:var(--border);margin-top:.4rem;overflow:hidden;}
+.sfill{height:100%;border-radius:2px;transition:all .3s;width:0;}
+.btn{width:100%;background:var(--grad);border:none;color:#050810;padding:.88rem;border-radius:12px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;transition:all .3s;margin-top:.4rem;}
+.btn:hover{opacity:.9;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.divider{display:flex;align-items:center;gap:1rem;margin:1.2rem 0;color:var(--muted);font-size:.78rem;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.google-btn{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--text);padding:.72rem;border-radius:12px;font-family:'Outfit',sans-serif;font-size:.87rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.7rem;transition:all .3s;}
+.google-btn:hover{background:rgba(255,255,255,.08);}
+.err{background:rgba(255,80,80,.08);border:1px solid rgba(255,80,80,.25);border-radius:10px;padding:.7rem 1rem;color:#ff8fa3;font-size:.82rem;margin-bottom:.8rem;display:none;}
+.suc{background:rgba(0,229,200,.08);border:1px solid rgba(0,229,200,.25);border-radius:10px;padding:.7rem 1rem;color:var(--teal);font-size:.82rem;margin-bottom:.8rem;display:none;}
+.lnk{text-align:center;margin-top:.9rem;font-size:.84rem;color:var(--muted);}
+.lnk a{color:var(--blue);text-decoration:none;font-weight:500;}
+.back{display:inline-flex;align-items:center;gap:.4rem;color:var(--muted);text-decoration:none;font-size:.81rem;margin-bottom:1.5rem;transition:color .3s;}
+.back:hover{color:var(--blue);}
+@keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="card">
+  <a href="index.html" class="back">← Back to Home</a>
+  <div class="logo">
+    <div class="logo-icon">AS</div>
+    <div class="logo-text">Amol Soft <span>Dev</span></div>
+  </div>
+  <h2>Create Account</h2>
+  <p class="sub">Join Amol Soft to place orders and chat with our team.</p>
+
+  <div class="roles">
+    <div class="role on" id="r-client" onclick="setRole('client',this)">👤 Client</div>
+    <div class="role"    id="r-team"   onclick="setRole('team',this)">⚙️ Team Member</div>
+  </div>
+
+  <!-- Team invite code box -->
+  <div class="role-card" id="teamBox">
+    <p>🎟️ Team members need an invite code from Siddharth.<br/>
+    Your email is trusted automatically if Siddharth added it.</p>
+    <div class="fg" style="margin-top:.7rem;margin-bottom:0;">
+      <label>Invite Code</label>
+      <input type="text" id="inviteCode" placeholder="e.g. X4TR-K9MZ" style="text-transform:uppercase;letter-spacing:.1em;"/>
+    </div>
+  </div>
+
+  <div class="err" id="errBox"></div>
+  <div class="suc" id="sucBox"></div>
+
+  <div class="form-row">
+    <div class="fg"><label>First Name *</label><input type="text" id="fname" placeholder="First name" autocomplete="given-name"/></div>
+    <div class="fg"><label>Last Name</label><input type="text" id="lname" placeholder="Last name" autocomplete="family-name"/></div>
+  </div>
+  <div class="fg"><label>Phone Number *</label><input type="tel" id="phone" placeholder="+91 XXXXX XXXXX" autocomplete="tel"/></div>
+  <div class="fg"><label>Email Address *</label><input type="email" id="email" placeholder="you@email.com" autocomplete="email"/></div>
+  <div class="fg">
+    <label>Password * (min 8 characters)</label>
+    <input type="password" id="pwd" placeholder="Choose a strong password" autocomplete="new-password" oninput="checkStrength(this.value)"/>
+    <div class="strength"><div class="sfill" id="sfill"></div></div>
+  </div>
+  <div class="fg"><label>Confirm Password *</label>
+    <input type="password" id="cpwd" placeholder="Repeat your password" autocomplete="new-password"
+           onkeydown="if(event.key==='Enter')doSignup()"/>
+  </div>
+
+  <button class="btn" id="signupBtn" onclick="doSignup()">Create Account →</button>
+
+  <div class="divider">or</div>
+  <button class="google-btn" onclick="googleSignup()">
+    <svg width="18" height="18" viewBox="0 0 24 24">
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+    </svg>
+    Sign up with Google
+  </button>
+  <p class="lnk">Already have an account? <a href="login.html">Sign in</a></p>
+</div>
+
+<script>
+let userRole = 'client';
+
+// ── If already logged in, redirect ────────────────────
+firebase.auth().onAuthStateChanged(user => {
+  if (user) window.location.href = 'dashboard.html';
+});
+
+function setRole(r, el) {
+  userRole = r;
+  document.querySelectorAll('.role').forEach(x => x.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('teamBox').classList.toggle('show', r === 'team');
+}
+
+function checkStrength(v) {
+  const f = document.getElementById('sfill');
+  const s = v.length >= 12 && /[A-Z]/.test(v) && /[0-9]/.test(v) ? 4
+           : v.length >= 8 && (/[A-Z]/.test(v) || /[0-9]/.test(v)) ? 3
+           : v.length >= 6 ? 2 : v.length > 0 ? 1 : 0;
+  f.style.width  = (s * 25) + '%';
+  f.style.background = ['','#ff6b6b','#f5c842','#4f9fff','#00e5c8'][s];
+}
+
+function showErr(m) {
+  const e = document.getElementById('errBox');
+  e.innerHTML = m; e.style.display = 'block';
+  document.getElementById('sucBox').style.display = 'none';
+}
+function showSuc(m) {
+  const e = document.getElementById('sucBox');
+  e.textContent = m; e.style.display = 'block';
+  document.getElementById('errBox').style.display = 'none';
+}
+
+// ── VALIDATE INVITE CODE ──────────────────────────────
+async function validateInviteCode(code, email) {
+  // Trusted emails skip code check
+  if (TRUSTED_TEAM.includes(email.toLowerCase())) return { valid: true, docId: null };
+
+  if (!code || code.length < 4) {
+    return { valid: false, error: '❌ Enter the invite code from Siddharth.' };
+  }
+
+  try {
+    // Sign in anonymously to read Firestore
+    if (!firebase.auth().currentUser) {
+      await firebase.auth().signInAnonymously();
+    }
+
+    const snap = await firebase.firestore()
+      .collection('inviteCodes')
+      .where('code', '==', code.toUpperCase())
+      .limit(1)
+      .get();
+
+    if (snap.empty) {
+      return { valid: false, error: '❌ Invalid invite code. Ask Siddharth to generate one for you.' };
+    }
+
+    const data = snap.docs[0].data();
+
+    if (data.status === 'used') {
+      return { valid: false, error: '❌ This code has already been used. Ask Siddharth for a new one.' };
+    }
+
+    if (data.expiresAt && data.expiresAt.toDate() < new Date()) {
+      return { valid: false, error: '❌ This invite code has expired. Ask Siddharth to generate a new one.' };
+    }
+
+    return { valid: true, docId: snap.docs[0].id };
+
+  } catch(e) {
+    console.error('Invite code check error:', e);
+    return { valid: false, error: '❌ Could not verify code. Check internet connection and try again.' };
+  }
+}
+
+// ── MAIN SIGNUP ───────────────────────────────────────
+async function doSignup() {
+  const fn    = document.getElementById('fname').value.trim();
+  const ln    = document.getElementById('lname').value.trim();
+  const ph    = document.getElementById('phone').value.trim();
+  const em    = document.getElementById('email').value.trim().toLowerCase();
+  const pw    = document.getElementById('pwd').value;
+  const cpw   = document.getElementById('cpwd').value;
+  const code  = document.getElementById('inviteCode').value.trim();
+
+  // Validation
+  if (!fn)       { showErr('Please enter your first name.'); return; }
+  if (!ph)       { showErr('Please enter your phone number.'); return; }
+  if (!em)       { showErr('Please enter your email address.'); return; }
+  if (!pw)       { showErr('Please enter a password.'); return; }
+  if (pw.length < 8) { showErr('Password must be at least 8 characters.'); return; }
+  if (pw !== cpw)    { showErr('Passwords do not match.'); return; }
+
+  const btn = document.getElementById('signupBtn');
+  btn.disabled = true; btn.textContent = 'Creating account...';
+
+  // Validate invite code for team members
+  let inviteCodeDocId = null;
+  if (userRole === 'team') {
+    btn.textContent = 'Checking invite code...';
+    const result = await validateInviteCode(code, em);
+    if (!result.valid) {
+      showErr(result.error);
+      btn.disabled = false; btn.textContent = 'Create Account →';
+      return;
+    }
+    inviteCodeDocId = result.docId;
+  }
+
+  btn.textContent = 'Creating account...';
+
+  try {
+    // Sign out anonymous session if exists
+    const currentUser = firebase.auth().currentUser;
+    if (currentUser && currentUser.isAnonymous) {
+      await firebase.auth().signOut();
+    }
+
+    // Create Firebase Auth account
+    const cred = await firebase.auth().createUserWithEmailAndPassword(em, pw);
+    await cred.user.updateProfile({ displayName: fn + (ln ? ' ' + ln : '') });
+
+    const fullName = fn + (ln ? ' ' + ln : '');
+    const role     = TRUSTED_TEAM.includes(em) ? 'team' : userRole;
+
+    // Save to Firestore (with retry)
+    const userData = {
+      name     : fullName,
+      firstName: fn,
+      lastName : ln,
+      phone    : ph,
+      email    : em,
+      role     : role,
+      photo    : '',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      tempPassword: btoa(pw)  // for OTP fallback
+    };
+
+    // Try saving — retry if fails
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await firebase.firestore().collection('users').doc(cred.user.uid).set(userData);
+        break;
+      } catch(fsErr) {
+        if (attempt === 2) console.log('Firestore save failed after 3 attempts');
+        await new Promise(r => setTimeout(r, 1000));
+      }
+    }
+
+    // Mark invite code as used
+    if (inviteCodeDocId) {
+      firebase.firestore().collection('inviteCodes').doc(inviteCodeDocId).update({
+        status : 'used',
+        usedBy : em,
+        usedAt : firebase.firestore.FieldValue.serverTimestamp()
+      }).catch(() => {});
+    }
+
+    // Notify team via SMS
+    alertSMS(`👤 New Signup - Amol Soft!\nName: ${fullName}\nPhone: ${ph}\nEmail: ${em}\nRole: ${role}\nTime: ${new Date().toLocaleString('en-IN')}`);
+
+    // Cache in localStorage
+    localStorage.setItem('asdi_user', JSON.stringify({ email: em, role, name: fullName }));
+
+    showSuc('✅ Account created! Taking you to dashboard...');
+    setTimeout(() => window.location.href = 'dashboard.html', 800);
+
+  } catch(e) {
+    btn.disabled = false; btn.textContent = 'Create Account →';
+    const codes = {
+      'auth/email-already-in-use': '❌ An account with this email already exists. <a href="login.html" style="color:#4f9fff;">Login instead →</a>',
+      'auth/weak-password'       : '❌ Password is too weak. Use at least 8 characters with numbers.',
+      'auth/invalid-email'       : '❌ Invalid email address. Check and try again.',
+      'auth/network-request-failed': '❌ No internet connection. Check your network.',
+      'auth/too-many-requests'   : '❌ Too many attempts. Please wait a few minutes.'
+    };
+    showErr(codes[e.code] || '❌ Signup failed: ' + e.message);
+  }
+}
+
+// ── GOOGLE SIGNUP ─────────────────────────────────────
+async function googleSignup() {
+  if (userRole === 'team') {
+    const code  = document.getElementById('inviteCode').value.trim();
+    const email = '';  // unknown before Google popup
+    const btn   = document.getElementById('signupBtn');
+    // For Google + team, check code first
+    if (!code) {
+      showErr('Please enter your invite code before signing up with Google as Team Member.');
+      return;
+    }
+  }
+
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const result   = await firebase.auth().signInWithPopup(provider);
+    const user     = result.user;
+    const em       = user.email.toLowerCase();
+    const role     = TRUSTED_TEAM.includes(em) ? 'team' : userRole;
+
+    if (userRole === 'team' && !TRUSTED_TEAM.includes(em)) {
+      const code   = document.getElementById('inviteCode').value.trim();
+      const result2 = await validateInviteCode(code, em);
+      if (!result2.valid) {
+        await firebase.auth().signOut();
+        showErr(result2.error); return;
+      }
+      if (result2.docId) {
+        firebase.firestore().collection('inviteCodes').doc(result2.docId).update({
+          status: 'used', usedBy: em, usedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(() => {});
+      }
+    }
+
+    await firebase.firestore().collection('users').doc(user.uid).set({
+      name: user.displayName, email: em, photo: user.photoURL || '',
+      role, createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    alertSMS(`👤 Google Signup - Amol Soft!\nName: ${user.displayName}\nEmail: ${em}\nRole: ${role}`);
+    localStorage.setItem('asdi_user', JSON.stringify({ email: em, role, name: user.displayName }));
+    window.location.href = 'dashboard.html';
+
+  } catch(e) {
+    if (e.code !== 'auth/popup-closed-by-user') showErr('Google signup failed: ' + e.message);
+  }
+}
+
+// ── SMS ALERT ─────────────────────────────────────────
+async function alertSMS(msg) {
+  try {
+    await fetch(
+      `https://www.fast2sms.com/dev/bulkV2?authorization=${FAST2SMS_KEY}&route=q&message=${encodeURIComponent(msg)}&flash=0&numbers=${TEAM_SMS}`,
+      { method: 'GET', headers: { 'cache-control': 'no-cache' } }
+    );
+  } catch(e) { /* silent */ }
+}
+</script>
+</body>
+</html>

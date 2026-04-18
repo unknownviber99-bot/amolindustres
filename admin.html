@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Admin — Amol Soft</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+// Init Firebase immediately
+const firebaseConfig={apiKey:"AIzaSyAa_XwFUGvozo9q002vpCc2Cv9qN8Ey7E4",authDomain:"amolsoft-ada6b.firebaseapp.com",projectId:"amolsoft-ada6b",storageBucket:"amolsoft-ada6b.firebasestorage.app",messagingSenderId:"878640194459",appId:"1:878640194459:web:435be03fd3b828014ef73e"};
+firebase.initializeApp(firebaseConfig);
+  // Enable offline persistence for INSTANT loading
+  firebase.firestore().enablePersistence({synchronizeTabs:true}).catch(()=>{});
+const db = firebase.firestore();
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Outfit',sans-serif;background:#050810;color:#eef2ff;min-height:100vh;}
+
+/* LOCK */
+#lock{position:fixed;inset:0;background:#050810;z-index:9999;display:flex;align-items:center;justify-content:center;}
+.lbox{background:#111527;border:1px solid rgba(99,179,255,.2);border-radius:24px;padding:2.5rem;width:92%;max-width:400px;text-align:center;position:relative;}
+.lbox::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#4f9fff,#00e5c8);border-radius:24px 24px 0 0;}
+.l-icon{font-size:3rem;margin-bottom:1rem;}
+.lbox h2{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:800;margin-bottom:.3rem;}
+.lbox p{color:#8899bb;font-size:.83rem;margin-bottom:1.5rem;}
+.l-inp{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(99,179,255,.15);border-radius:10px;padding:.78rem 1rem;color:#eef2ff;font-family:'Outfit',sans-serif;font-size:.95rem;text-align:center;outline:none;margin-bottom:1rem;letter-spacing:.08em;}
+.l-inp:focus{border-color:rgba(79,159,255,.4);}
+.l-btn{width:100%;background:linear-gradient(135deg,#4f9fff,#00e5c8);border:none;color:#050810;padding:.88rem;border-radius:11px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;}
+.l-err{color:#ff6b8a;font-size:.8rem;margin-top:.7rem;display:none;}
+.l-link{display:block;margin-top:1rem;color:#8899bb;font-size:.78rem;text-decoration:none;}
+.l-link:hover{color:#4f9fff;}
+
+/* APP */
+#app{display:none;}
+.topbar{background:#0c0f1e;border-bottom:1px solid rgba(99,179,255,.1);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.tb-left{display:flex;align-items:center;gap:.7rem;}
+.tb-icon{width:32px;height:32px;background:linear-gradient(135deg,#4f9fff,#00e5c8);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:#050810;}
+.tb-title{font-family:'Playfair Display',serif;font-weight:800;font-size:1.05rem;}
+.tb-badge{background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.25);color:#f5c842;font-size:.7rem;padding:.22rem .7rem;border-radius:50px;}
+.tb-right{display:flex;gap:.6rem;}
+.tb-btn{background:rgba(255,255,255,.05);border:1px solid rgba(99,179,255,.1);color:#8899bb;padding:.42rem .9rem;border-radius:8px;font-size:.78rem;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;}
+.tb-btn:hover{border-color:rgba(79,159,255,.3);color:#eef2ff;}
+
+/* TABS */
+.tabs-bar{display:flex;gap:.4rem;padding:1rem 1.5rem;background:#0c0f1e;border-bottom:1px solid rgba(99,179,255,.1);overflow-x:auto;}
+.tb-tab{padding:.52rem 1.1rem;border-radius:9px;cursor:pointer;font-size:.83rem;color:#8899bb;transition:all .2s;white-space:nowrap;border:1px solid transparent;user-select:none;}
+.tb-tab:hover{background:rgba(255,255,255,.04);color:#eef2ff;}
+.tb-tab.on{background:rgba(79,159,255,.12);color:#4f9fff;border-color:rgba(79,159,255,.2);}
+
+.body{padding:1.5rem;max-width:1150px;margin:0 auto;}
+.pg{display:none;}.pg.on{display:block;}
+
+/* CARDS */
+.card{background:#111527;border:1px solid rgba(99,179,255,.1);border-radius:16px;padding:1.4rem;margin-bottom:1.2rem;position:relative;overflow:hidden;}
+.card-bar{position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#4f9fff,#00e5c8);}
+.card h3{font-family:'Playfair Display',serif;font-weight:700;font-size:1rem;margin-bottom:.25rem;}
+.csub{color:#8899bb;font-size:.78rem;margin-bottom:1.1rem;}
+
+/* STATS */
+.stats-g{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.2rem;}
+.stat-c{background:#111527;border:1px solid rgba(99,179,255,.1);border-radius:13px;padding:1.1rem 1.3rem;}
+.s-l{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:#8899bb;margin-bottom:.3rem;}
+.s-v{font-family:'Playfair Display',serif;font-size:1.85rem;font-weight:900;background:linear-gradient(135deg,#4f9fff,#00e5c8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.s-s{font-size:.7rem;color:#8899bb;margin-top:.15rem;}
+
+/* FORM */
+.form-r{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:.7rem;align-items:end;}
+.fg{display:flex;flex-direction:column;gap:.3rem;}
+.fg label{font-size:.7rem;color:#8899bb;letter-spacing:.05em;}
+.fg input,.fg select{background:rgba(255,255,255,.05);border:1px solid rgba(99,179,255,.15);border-radius:9px;padding:.62rem .88rem;color:#eef2ff;font-family:'Outfit',sans-serif;font-size:.84rem;outline:none;width:100%;transition:all .3s;}
+.fg input:focus,.fg select:focus{border-color:rgba(79,159,255,.4);}
+.fg select option{background:#111527;}
+.btn{padding:.62rem 1.3rem;border-radius:9px;font-family:'Outfit',sans-serif;font-weight:600;font-size:.83rem;cursor:pointer;border:none;transition:all .3s;}
+.btn-p{background:linear-gradient(135deg,#4f9fff,#00e5c8);color:#050810;}
+.btn-p:hover{opacity:.9;}
+.btn-sm{padding:.32rem .75rem;border-radius:7px;font-size:.73rem;font-family:'Outfit',sans-serif;cursor:pointer;border:none;transition:all .2s;}
+.btn-t{background:rgba(0,229,200,.08);border:1px solid rgba(0,229,200,.18);color:#00e5c8;}
+.btn-r{background:rgba(255,107,138,.08);border:1px solid rgba(255,107,138,.18);color:#ff6b8a;}
+.btn-b{background:rgba(79,159,255,.08);border:1px solid rgba(79,159,255,.18);color:#4f9fff;}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:#8899bb;padding:.55rem .9rem;border-bottom:1px solid rgba(99,179,255,.1);text-align:left;}
+.tbl td{padding:.75rem .9rem;border-bottom:1px solid rgba(99,179,255,.04);font-size:.82rem;vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:rgba(255,255,255,.02);}
+.code-p{font-family:monospace;font-size:.88rem;background:rgba(79,159,255,.08);border:1px solid rgba(79,159,255,.18);padding:.22rem .6rem;border-radius:7px;cursor:pointer;letter-spacing:.08em;}
+.code-p:hover{background:rgba(79,159,255,.14);}
+.badge{display:inline-block;padding:.16rem .55rem;border-radius:50px;font-size:.68rem;font-weight:600;}
+.b-g{background:rgba(74,222,128,.1);color:#4ade80;border:1px solid rgba(74,222,128,.18);}
+.b-b{background:rgba(79,159,255,.1);color:#4f9fff;border:1px solid rgba(79,159,255,.18);}
+.b-r{background:rgba(255,107,138,.1);color:#ff6b8a;border:1px solid rgba(255,107,138,.18);}
+.b-y{background:rgba(245,200,66,.1);color:#f5c842;border:1px solid rgba(245,200,66,.18);}
+
+/* CHAT */
+.chat-g{display:grid;grid-template-columns:240px 1fr;gap:1.2rem;height:480px;}
+.room-l{background:#0c0f1e;border:1px solid rgba(99,179,255,.1);border-radius:13px;overflow-y:auto;padding:.4rem;}
+.ri{padding:.72rem .9rem;border-radius:10px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.6rem;margin-bottom:.15rem;}
+.ri:hover{background:rgba(255,255,255,.04);}
+.ri.on{background:rgba(79,159,255,.08);border:1px solid rgba(79,159,255,.18);}
+.ri-e{font-size:1.1rem;}
+.ri-n{font-size:.83rem;font-weight:600;}
+.chat-v{background:#0c0f1e;border:1px solid rgba(99,179,255,.1);border-radius:13px;display:flex;flex-direction:column;overflow:hidden;}
+.cv-h{padding:.8rem 1.1rem;border-bottom:1px solid rgba(99,179,255,.1);display:flex;align-items:center;gap:.6rem;flex-shrink:0;}
+.cv-h h4{font-size:.88rem;font-weight:600;}
+.cv-h p{font-size:.68rem;color:#8899bb;}
+.cv-msgs{flex:1;overflow-y:auto;padding:.9rem;display:flex;flex-direction:column;gap:.4rem;}
+.cv-ph{flex:1;display:flex;align-items:center;justify-content:center;color:#8899bb;font-size:.83rem;}
+.m-row{display:flex;align-items:flex-end;gap:.4rem;max-width:72%;}
+.m-row.r{align-self:flex-end;flex-direction:row-reverse;}
+.m-av{width:24px;height:24px;border-radius:50%;background:#161929;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;flex-shrink:0;}
+.m-row.r .m-av{background:linear-gradient(135deg,#4f9fff,#00e5c8);color:#050810;}
+.m-bbl{padding:.5rem .82rem;border-radius:11px;font-size:.875rem;line-height:1.5;}
+.m-row.l .m-bbl{background:#161929;border:1px solid rgba(99,179,255,.07);border-bottom-left-radius:3px;}
+.m-row.r .m-bbl{background:linear-gradient(135deg,#4f9fff,#00e5c8);color:#050810;border-bottom-right-radius:3px;}
+.m-meta{font-size:.62rem;color:#8899bb;margin-top:.1rem;}
+.m-row.r .m-meta{text-align:right;}
+.m-sdr{font-size:.65rem;color:#8899bb;margin-bottom:.08rem;}
+.m-row.r .m-sdr{text-align:right;}
+.cv-reply{padding:.7rem .9rem;border-top:1px solid rgba(99,179,255,.1);display:flex;gap:.5rem;flex-shrink:0;}
+.cv-ta{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(99,179,255,.15);border-radius:10px;padding:.58rem .85rem;color:#eef2ff;font-family:'Outfit',sans-serif;font-size:.84rem;outline:none;resize:none;height:36px;transition:border-color .3s;}
+.cv-ta:focus{border-color:rgba(79,159,255,.4);}
+.cv-snd{background:linear-gradient(135deg,#4f9fff,#00e5c8);border:none;color:#050810;padding:.5rem .9rem;border-radius:9px;font-family:'Outfit',sans-serif;font-weight:600;font-size:.82rem;cursor:pointer;}
+
+/* NOTIF ITEMS */
+.ni{background:#0c0f1e;border:1px solid rgba(99,179,255,.07);border-radius:10px;padding:.78rem 1rem;display:flex;align-items:center;gap:.72rem;margin-bottom:.42rem;}
+.ni-i{width:33px;height:33px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.88rem;flex-shrink:0;}
+.ni-b{flex:1;}
+.ni-t{font-size:.8rem;font-weight:500;margin-bottom:.08rem;}
+.ni-s{font-size:.7rem;color:#8899bb;}
+.ni-time{font-size:.65rem;color:#8899bb;white-space:nowrap;}
+
+/* MEMBER ROW */
+.mr{background:#0c0f1e;border:1px solid rgba(99,179,255,.07);border-radius:10px;padding:.78rem 1rem;display:flex;align-items:center;gap:.72rem;margin-bottom:.42rem;}
+.mr-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0;}
+.mr-n{font-size:.85rem;font-weight:600;}
+.mr-e{font-size:.72rem;color:#8899bb;}
+
+/* SHARE MODAL */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:500;display:none;align-items:center;justify-content:center;padding:1rem;}
+.modal.open{display:flex;}
+.mbox{background:#111527;border:1px solid rgba(99,179,255,.18);border-radius:20px;padding:2rem;width:100%;max-width:440px;position:relative;}
+.mbox::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#4f9fff,#00e5c8);border-radius:20px 20px 0 0;}
+.m-close{position:absolute;top:.9rem;right:1.1rem;background:none;border:none;color:#8899bb;font-size:1rem;cursor:pointer;}
+.m-code-box{background:rgba(79,159,255,.06);border:1px solid rgba(79,159,255,.15);border-radius:11px;padding:.9rem;text-align:center;margin:1rem 0;}
+.mc-lbl{font-size:.68rem;color:#8899bb;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.25rem;}
+.mc-code{font-family:monospace;font-size:1.7rem;letter-spacing:.2em;color:#4f9fff;font-weight:700;}
+.mc-exp{font-size:.72rem;color:#8899bb;margin-top:.25rem;}
+.share-g{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;}
+.sh-btn{padding:.65rem;border-radius:9px;font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.35rem;}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.3rem;right:1.3rem;background:#111527;border:1px solid rgba(0,229,200,.3);border-radius:12px;padding:.72rem 1.1rem;font-size:.81rem;color:#00e5c8;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;max-width:280px;}
+.toast.on{opacity:1;}
+.empty{color:#8899bb;font-size:.82rem;padding:1.5rem;text-align:center;}
+
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+@media(max-width:700px){.stats-g{grid-template-columns:1fr 1fr;}.form-r{grid-template-columns:1fr;}.chat-g{grid-template-columns:1fr;height:auto;}}
+</style>
+</head>
+<body>
+
+<!-- LOCK SCREEN -->
+<div id="lock">
+  <div class="lbox">
+    <div class="l-icon">🔐</div>
+    <h2>Admin Panel</h2>
+    <p>Enter admin password to access. Restricted to Siddharth only.</p>
+    <input class="l-inp" type="password" id="lockPwd" placeholder="Enter password" onkeydown="if(event.key==='Enter')unlock()"/>
+    <button class="l-btn" onclick="unlock()">Unlock Admin Panel →</button>
+    <div class="l-err" id="lockErr">❌ Wrong password. Try again.</div>
+    <a href="dashboard.html" class="l-link">← Back to Dashboard</a>
+  </div>
+</div>
+
+<!-- MAIN APP (hidden until password entered) -->
+<div id="app">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-icon">AS</div>
+      <span class="tb-title">Amol Soft Admin</span>
+      <span class="tb-badge">⚡ Siddharth</span>
+    </div>
+    <div class="tb-right">
+      <span id="adminClock" style="color:#8899bb;font-size:.78rem;margin-right:.3rem;"></span>
+      <a href="dashboard.html" class="tb-btn">🏠 Dashboard</a>
+      <a href="index.html" class="tb-btn">🌐 Website</a>
+    </div>
+  </div>
+
+  <div class="tabs-bar">
+    <div class="tb-tab on" onclick="switchTab('overview',this)">📊 Overview</div>
+    <div class="tb-tab" onclick="switchTab('codes',this)">🎟️ Invite Codes</div>
+    <div class="tb-tab" onclick="switchTab('chat',this)">💬 Customer Chats</div>
+    <div class="tb-tab" onclick="switchTab('orders',this)">📋 Orders</div>
+    <div class="tb-tab" onclick="switchTab('members',this)">👥 Members</div>
+    <div class="tb-tab" onclick="switchTab('notifs',this)">🔔 Notifications</div>
+    <div class="tb-tab" onclick="switchTab('approvals',this)">🧾 Bill Approvals <span id="approvBadge" style="background:#f5c842;color:#050810;font-size:.65rem;padding:.1rem .4rem;border-radius:50px;margin-left:.3rem;display:none;">!</span></div>
+  </div>
+
+  <div class="body">
+
+    <!-- OVERVIEW -->
+    <div class="pg on" id="pg-overview">
+      <div class="stats-g">
+        <div class="stat-c"><div class="s-l">Active Codes</div><div class="s-v" id="sC">—</div><div class="s-s">Ready to use</div></div>
+        <div class="stat-c"><div class="s-l">Members</div><div class="s-v" id="sM">—</div><div class="s-s">Registered</div></div>
+        <div class="stat-c"><div class="s-l">Orders</div><div class="s-v" id="sO">—</div><div class="s-s">All time</div></div>
+        <div class="stat-c"><div class="s-l">Messages</div><div class="s-v" id="sMg">—</div><div class="s-s">All rooms</div></div>
+      </div>
+      <div class="card">
+        <div class="card-bar"></div>
+        <h3>⚡ Quick Generate Invite Code</h3>
+        <div class="csub">Generate a code and share via WhatsApp or SMS instantly.</div>
+        <div class="form-r">
+          <div class="fg"><label>Name *</label><input type="text" id="qN" placeholder="Person's full name"/></div>
+          <div class="fg"><label>Phone</label><input type="tel" id="qP" placeholder="9876543210"/></div>
+          <div class="fg"><label>Expires In</label>
+            <select id="qE"><option value="1">1 Day</option><option value="3">3 Days</option><option value="7" selected>7 Days</option><option value="14">14 Days</option><option value="30">30 Days</option></select>
+          </div>
+          <button class="btn btn-p" onclick="genCode('q')">🎟️ Generate & Share</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-bar"></div>
+        <h3>🔔 Recent Activity</h3>
+        <div class="csub">Latest logins, signups and orders — live.</div>
+        <div id="recentAct"><div class="empty">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- INVITE CODES -->
+    <div class="pg" id="pg-codes">
+      <div class="card">
+        <div class="card-bar"></div>
+        <h3>🎟️ Generate New Invite Code</h3>
+        <div class="csub">Each code is unique, single-use, and expires after the chosen time.</div>
+        <div class="form-r">
+          <div class="fg"><label>Name *</label><input type="text" id="cN" placeholder="Full name"/></div>
+          <div class="fg"><label>Phone</label><input type="tel" id="cP" placeholder="9876543210"/></div>
+          <div class="fg"><label>Expires In</label>
+            <select id="cE"><option value="1">1 Day</option><option value="3">3 Days</option><option value="7" selected>7 Days</option><option value="14">14 Days</option><option value="30">30 Days</option></select>
+          </div>
+          <button class="btn btn-p" onclick="genCode('c')">🎟️ Generate</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-bar"></div>
+        <h3>All Invite Codes</h3>
+        <div class="csub">Click any code to copy it. Click Share to send via WhatsApp.</div>
+        <div id="codesT"><div class="empty">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- CUSTOMER CHAT -->
+    <div class="pg" id="pg-chat">
+      <div class="card" style="padding:1.2rem;">
+        <div class="card-bar"></div>
+        <h3 style="margin-bottom:.2rem;">💬 Customer Chat Rooms</h3>
+        <div class="csub">Read all messages and reply as team. Clients see your replies instantly.</div>
+        <div class="chat-g">
+          <div class="room-l">
+            <div class="ri on" id="ri-general" onclick="viewRoom('general','General Chat','💬')"><span class="ri-e">💬</span><span class="ri-n">General Chat</span></div>
+            <div class="ri" id="ri-orders" onclick="viewRoom('orders','Orders & Projects','📋')"><span class="ri-e">📋</span><span class="ri-n">Orders & Projects</span></div>
+            <div class="ri" id="ri-support" onclick="viewRoom('support','Technical Support','🔧')"><span class="ri-e">🔧</span><span class="ri-n">Technical Support</span></div>
+          </div>
+          <div class="chat-v">
+            <div class="cv-h">
+              <span id="cvE" style="font-size:1.2rem;">💬</span>
+              <div><h4 id="cvN">General Chat</h4><p>All client messages appear here in real-time</p></div>
+            </div>
+            <div class="cv-msgs" id="cvMsgs"><div class="cv-ph">Loading messages...</div></div>
+            <div class="cv-reply">
+              <textarea class="cv-ta" id="cvTxt" placeholder="Reply as team (Siddharth)... Enter to send" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();adminSend();}"></textarea>
+              <button class="cv-snd" onclick="adminSend()">Send ➤</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="pg" id="pg-orders">
+      <div class="card">
+        <div class="card-bar"></div>
+        <h3>📋 All Client Orders</h3>
+        <div class="csub">Every order submitted by clients.</div>
+        <div id="ordersT"><div class="empty">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- MEMBERS -->
+    <div class="pg" id="pg-members">
+      <div class="card">
+        <div class="card-bar"></div>
+        <h3>👥 All Members</h3>
+        <div class="csub">View and manage all client and team accounts.</div>
+        <div id="membersL"><div class="empty">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- BILL APPROVALS (Chef Pranav) -->
+    <div class="pg" id="pg-approvals">
+      <div class="card">
+        <div class="card-bar"></div>
+        <h3>🧾 Invoice Approvals — Chef Panel</h3>
+        <div class="csub">Invoices waiting for Pranav's approval before sending to clients.</div>
+        <div id="approvalsList"><div class="empty">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="pg" id="pg-notifs">
+      <div class="card">
+        <div class="card-bar"></div>
+        <h3>🔔 All Notifications</h3>
+        <div class="csub">Complete activity log — every login, signup, order and message.</div>
+        <div id="notifsL"><div class="empty">Loading...</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SHARE MODAL -->
+<div class="modal" id="shareModal">
+  <div class="mbox">
+    <button class="m-close" onclick="closeShare()">✕</button>
+    <h3 style="font-family:'Playfair Display',serif;font-weight:800;font-size:1.2rem;">Share Invite Code</h3>
+    <p style="color:#8899bb;font-size:.81rem;margin-top:.25rem;">Send to <strong id="shName" style="color:#eef2ff;"></strong></p>
+    <div class="m-code-box">
+      <div class="mc-lbl">Invite Code</div>
+      <div class="mc-code" id="shCode">—</div>
+      <div class="mc-exp" id="shExp">—</div>
+    </div>
+    <div class="share-g">
+      <button class="sh-btn" style="background:rgba(255,255,255,.06);color:#eef2ff;" onclick="copyCode()">📋 Copy Code</button>
+      <button class="sh-btn" style="background:rgba(37,211,102,.1);color:#25d366;" onclick="shaWA()">💬 WhatsApp</button>
+      <button class="sh-btn" style="background:rgba(245,200,66,.1);color:#f5c842;" onclick="shaSMS()">📱 SMS</button>
+      <button class="sh-btn" style="background:rgba(79,159,255,.1);color:#4f9fff;" onclick="copyMsg()">📄 Copy Message</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Config ────────────────────────────────────────
+const ADMIN_PWD = 'Siddharth@2025';
+const FAST2SMS_KEY = 'yZIH31o0GU7NfWVD5OrXnvcw29PJgRaibMBxpmh6QkqtslTeuF4VZIwmJ6pB8lqfaskb1i0RYGAQSXvP';
+let curRoom = 'general', msgUnsub = null, shareData = null;
+
+// Clock
+setInterval(()=>{const e=document.getElementById('adminClock');if(e)e.textContent=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});},1000);
+
+// ── UNLOCK ────────────────────────────────────────
+function unlock(){
+  const pwd=document.getElementById('lockPwd').value;
+  if(pwd===ADMIN_PWD){
+    document.getElementById('lock').style.display='none';
+    document.getElementById('app').style.display='block';
+    loadAll();
+  }else{
+    const e=document.getElementById('lockErr');e.style.display='block';
+    document.getElementById('lockPwd').value='';
+    setTimeout(()=>e.style.display='none',3000);
+  }
+}
+document.getElementById('lockPwd').addEventListener('keydown',e=>{if(e.key==='Enter')unlock();});
+
+// ── LOAD ALL DATA ─────────────────────────────────
+function loadAll(){
+  loadStats();
+  loadRecent();
+  loadCodes();
+  loadChat('general');
+  loadOrders();
+  loadMembers();
+  loadNotifs();
+  loadApprovals();
+  // Real-time refresh for notifications
+  db.collection('notifications').orderBy('time','desc').limit(1).onSnapshot(()=>{loadRecent();loadStats();});
+}
+
+// ── TABS ──────────────────────────────────────────
+function switchTab(id,el){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tb-tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('pg-'+id).classList.add('on');
+  el.classList.add('on');
+}
+
+// ── STATS ─────────────────────────────────────────
+async function loadStats(){
+  try{
+    const[a,b,c,d]=await Promise.all([
+      db.collection('inviteCodes').get(),
+      db.collection('users').get(),
+      db.collection('orders').get(),
+      db.collection('messages').get()
+    ]);
+    const now=new Date();
+    const active=a.docs.filter(d=>{const x=d.data();return x.status==='active'&&x.expiresAt&&x.expiresAt.toDate()>now;}).length;
+    document.getElementById('sC').textContent=active;
+    document.getElementById('sM').textContent=b.size;
+    document.getElementById('sO').textContent=c.size;
+    document.getElementById('sMg').textContent=d.size;
+  }catch(e){console.error('Stats:',e);}
+}
+
+// ── RECENT ────────────────────────────────────────
+async function loadRecent(){
+  try{
+    const snap=await db.collection('notifications').orderBy('time','desc').limit(8).get();
+    document.getElementById('recentAct').innerHTML=snap.empty?'<div class="empty">No activity yet.</div>':snap.docs.map(d=>niHTML(d.data())).join('');
+  }catch(e){document.getElementById('recentAct').innerHTML='<div class="empty">Could not load.</div>';}
+}
+
+// ── CODES ─────────────────────────────────────────
+function mkCode(){return(Math.random().toString(36).substr(2,4)+'-'+Math.random().toString(36).substr(2,4)).toUpperCase();}
+
+async function genCode(pfx){
+  const name=document.getElementById(pfx+'N').value.trim();
+  const phone=document.getElementById(pfx+'P').value.trim();
+  const days=parseInt(document.getElementById(pfx+'E').value);
+  if(!name){toast('Enter the person name first.');return;}
+
+  // Disable button
+  const allBtns=document.querySelectorAll('[onclick*="genCode"]');
+  allBtns.forEach(b=>{b.disabled=true;b.textContent='Generating...';});
+
+  const code=mkCode();
+  const exp=new Date();exp.setDate(exp.getDate()+days);
+
+  // Show share popup INSTANTLY - don't wait for Firebase
+  openShare({code,forName:name,forPhone:phone,expiresAt:exp,id:'instant'});
+  document.getElementById(pfx+'N').value='';
+  document.getElementById(pfx+'P').value='';
+  toast('✅ Code ready for '+name+'!');
+  allBtns.forEach(b=>{b.disabled=false;b.textContent='🎟️ Generate & Share';});
+
+  // Save to Firebase in BACKGROUND - don't block UI
+  (async()=>{
+    try{
+      if(!firebase.auth().currentUser) await firebase.auth().signInAnonymously();
+      await db.collection('inviteCodes').add({
+        code,forName:name,forPhone:phone,days,
+        expiresAt:firebase.firestore.Timestamp.fromDate(exp),
+        createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+        status:'active',usedBy:null
+      });
+      loadCodes();loadStats();
+    }catch(e){console.log('Background save:',e);}
+  })();
+}
+
+async function loadCodes(){
+  const el=document.getElementById('codesT');
+  try{
+    const snap=await db.collection('inviteCodes').orderBy('createdAt','desc').get();
+    if(snap.empty){el.innerHTML='<div class="empty">No invite codes yet. Generate one above!</div>';return;}
+    const now=new Date();
+    const rows=snap.docs.map(doc=>{
+      const d=doc.data();
+      const exp=d.expiresAt?d.expiresAt.toDate():new Date(0);
+      const used=d.status==='used';const expired=exp<now;
+      const dLeft=Math.max(0,Math.ceil((exp-now)/86400000));
+      const badge=used?'<span class="badge b-b">Used</span>':expired?'<span class="badge b-r">Expired</span>':'<span class="badge b-g">Active</span>';
+      return `<tr>
+        <td><span class="code-p" onclick="navigator.clipboard.writeText('${d.code}').then(()=>toast('Copied!'))">${d.code}</span></td>
+        <td>${d.forName||'—'}</td><td>${d.forPhone||'—'}</td>
+        <td>${badge}</td>
+        <td>${used?'Used':expired?'Expired':dLeft+'d left'}</td>
+        <td>${d.usedBy||'—'}</td>
+        <td style="display:flex;gap:.3rem;">
+          ${!used&&!expired?`<button class="btn-sm btn-t" onclick='openShare({code:"${d.code}",forName:"${(d.forName||'').replace(/"/g,'')}",forPhone:"${d.forPhone||''}",expiresAt:new Date(${exp.getTime()}),id:"${doc.id}"})'>Share</button>`:''}
+          <button class="btn-sm btn-r" onclick="delCode('${doc.id}')">Del</button>
+        </td>
+      </tr>`;
+    }).join('');
+    el.innerHTML=`<table class="tbl"><thead><tr><th>Code</th><th>For</th><th>Phone</th><th>Status</th><th>Expiry</th><th>Used By</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }catch(e){el.innerHTML='<div class="empty">Could not load: '+e.message+'</div>';}
+}
+
+async function delCode(id){
+  if(!confirm('Delete this code?'))return;
+  await db.collection('inviteCodes').doc(id).delete();
+  toast('Code deleted.');loadCodes();loadStats();
+}
+
+// ── SHARE MODAL ───────────────────────────────────
+function openShare(data){
+  shareData=data;
+  document.getElementById('shName').textContent=data.forName||'the person';
+  document.getElementById('shCode').textContent=data.code;
+  const exp=data.expiresAt instanceof Date?data.expiresAt:new Date(data.expiresAt);
+  document.getElementById('shExp').textContent='Expires: '+exp.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+  document.getElementById('shareModal').classList.add('open');
+}
+function closeShare(){document.getElementById('shareModal').classList.remove('open');}
+document.getElementById('shareModal').addEventListener('click',e=>{if(e.target.id==='shareModal')closeShare();});
+
+function getMsg(){
+  const exp=shareData.expiresAt instanceof Date?shareData.expiresAt:new Date(shareData.expiresAt);
+  return `Hi ${shareData.forName}! 👋\n\nYou're invited to join *Amol Soft Developing Industry* as a team member.\n\n🎟️ *Invite Code:* ${shareData.code}\n⏰ *Expires:* ${exp.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}\n\n*Steps:*\n1. Open our website\n2. Click "Get Started"\n3. Select "Team Member"\n4. Enter the code above\n\n— Siddharth, Amol Soft`;
+}
+function copyCode(){navigator.clipboard.writeText(shareData.code).then(()=>toast('Code copied!'));}
+function copyMsg(){navigator.clipboard.writeText(getMsg()).then(()=>toast('Message copied!'));}
+function shaWA(){window.open('https://wa.me/?text='+encodeURIComponent(getMsg()),'_blank');}
+function shaSMS(){
+  const ph=shareData.forPhone;
+  const body=`Amol Soft Invite Code: ${shareData.code}. Sign up as Team Member on our website.`;
+  window.open(ph?'sms:+91'+ph+'?body='+encodeURIComponent(body):'sms:?body='+encodeURIComponent(body),'_blank');
+}
+
+// ── CHAT ──────────────────────────────────────────
+function viewRoom(id,name,emoji){
+  curRoom=id;
+  document.querySelectorAll('.ri').forEach(r=>r.classList.remove('on'));
+  document.getElementById('ri-'+id).classList.add('on');
+  document.getElementById('cvE').textContent=emoji;
+  document.getElementById('cvN').textContent=name;
+  loadChat(id);
+}
+
+function loadChat(roomId){
+  const area=document.getElementById('cvMsgs');
+  area.innerHTML='<div class="cv-ph">Loading messages...</div>';
+  if(msgUnsub)msgUnsub();
+  msgUnsub=db.collection('messages').where('roomId','==',roomId).orderBy('time','asc')
+    .onSnapshot(snap=>{
+      if(snap.empty){area.innerHTML='<div class="cv-ph">No messages in this room yet.</div>';return;}
+      area.innerHTML='';
+      snap.forEach(doc=>{
+        const d=doc.data();
+        const isTeam=d.role==='team';
+        const t=d.time?new Date(d.time.seconds*1000).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):'';
+        const div=document.createElement('div');
+        div.className='m-row '+(isTeam?'r':'l');
+        div.innerHTML=`<div class="m-av">${(d.name||'U').charAt(0).toUpperCase()}</div><div><div class="m-sdr">${isTeam?'👑 Team: '+(d.name||''):d.name||'Client'}</div><div class="m-bbl">${esc(d.text||'')}</div><div class="m-meta">${t}</div></div>`;
+        area.appendChild(div);
+      });
+      area.scrollTop=area.scrollHeight;
+    },err=>{area.innerHTML='<div class="cv-ph" style="color:#ff6b8a;">Error: '+err.message+'</div>';});
+}
+
+async function adminSend(){
+  const txt=document.getElementById('cvTxt').value.trim();
+  if(!txt)return;
+  document.getElementById('cvTxt').value='';
+  try{
+    await db.collection('messages').add({
+      roomId:curRoom,uid:'admin-siddharth',name:'Siddharth (Team)',
+      text:txt,time:firebase.firestore.FieldValue.serverTimestamp(),role:'team'
+    });
+    toast('Message sent!');
+  }catch(e){toast('Failed: '+e.message);}
+}
+
+function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ── ORDERS ────────────────────────────────────────
+async function loadOrders(){
+  const el=document.getElementById('ordersT');
+  try{
+    const snap=await db.collection('orders').orderBy('time','desc').get();
+    if(snap.empty){el.innerHTML='<div class="empty">No orders yet.</div>';return;}
+    const rows=snap.docs.map(doc=>{
+      const d=doc.data();
+      const t=d.time?new Date(d.time.toDate()).toLocaleDateString('en-IN'):'—';
+      const pri=d.priority||'Normal';
+      const pc=pri==='Urgent'?'b-r':pri==='High'?'b-y':'b-g';
+      return `<tr><td><strong>${d.title||'—'}</strong></td><td>${d.userName||'—'}</td><td>${d.userPhone||'—'}</td><td>${d.service||'—'}</td><td><span class="badge ${pc}">${pri}</span></td><td>${d.budget||'—'}</td><td>${t}</td><td><span class="badge b-b">${d.status||'pending'}</span></td></tr>`;
+    }).join('');
+    el.innerHTML=`<table class="tbl"><thead><tr><th>Project</th><th>Client</th><th>Phone</th><th>Service</th><th>Priority</th><th>Budget</th><th>Date</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }catch(e){el.innerHTML='<div class="empty">Could not load: '+e.message+'</div>';}
+}
+
+// ── MEMBERS ───────────────────────────────────────
+async function loadMembers(){
+  const el=document.getElementById('membersL');
+  try{
+    const snap=await db.collection('users').orderBy('createdAt','desc').get();
+    if(snap.empty){el.innerHTML='<div class="empty">No members yet.</div>';return;}
+    const cols=['rgba(0,229,200,.15)','rgba(79,159,255,.15)','rgba(245,200,66,.15)','rgba(255,107,138,.15)'];
+    const tcols=['#00e5c8','#4f9fff','#f5c842','#ff6b8a'];
+    el.innerHTML=snap.docs.map((doc,i)=>{
+      const d=doc.data();
+      const c=cols[i%4];const tc=tcols[i%4];
+      const t=d.createdAt?new Date(d.createdAt.toDate()).toLocaleDateString('en-IN'):'—';
+      const isTeam=d.role==='team';
+      return `<div class="mr"><div class="mr-av" style="background:${c};color:${tc};">${(d.name||'?').charAt(0).toUpperCase()}</div><div style="flex:1;"><div class="mr-n">${d.name||'—'} <span class="badge ${isTeam?'b-g':'b-b'}" style="margin-left:.3rem;">${isTeam?'Team':'Client'}</span></div><div class="mr-e">${d.email||'—'} · ${d.phone||'no phone'} · Joined ${t}</div></div>${!isTeam?`<button class="btn-sm btn-t" onclick="chRole('${doc.id}','team','${(d.name||'').replace(/'/g,'')}')" >Promote</button>`:`<button class="btn-sm btn-r" onclick="chRole('${doc.id}','client','${(d.name||'').replace(/'/g,'')}')">Demote</button>`}</div>`;
+    }).join('');
+  }catch(e){el.innerHTML='<div class="empty">Could not load: '+e.message+'</div>';}
+}
+
+async function chRole(uid,role,name){
+  if(!confirm('Change '+name+' to '+role+'?'))return;
+  await db.collection('users').doc(uid).update({role});
+  toast(name+' is now '+role+'.');
+  loadMembers();loadStats();
+}
+
+// ── NOTIFICATIONS ─────────────────────────────────
+const N_I={login:'🔐',signup:'👤',order:'📋',message:'💬',visit:'🌐'};
+const N_B={login:'rgba(79,159,255,.1)',signup:'rgba(0,229,200,.1)',order:'rgba(245,200,66,.1)',message:'rgba(255,107,138,.1)',visit:'rgba(99,179,255,.06)'};
+
+function niHTML(d){
+  const t=d.time?new Date(d.time.toDate()).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'—';
+  let title='',sub='';
+  if(d.type==='order'){title='📋 Order: '+(d.title||d.service);sub='From: '+(d.userName||'')+'·'+(d.service||'');}
+  else if(d.type==='message'){title='💬 Message from '+(d.userName||'');sub='In: '+(d.room||'')+' — "'+(d.preview||'')+'"';}
+  else if(d.type==='signup'){title='👤 New signup: '+(d.userName||'');sub=(d.userEmail||'');}
+  else if(d.type==='login'){title='🔐 Login: '+(d.userName||d.user||'');sub='Role: '+(d.role||'client');}
+  else if(d.type==='visit'){title='🌐 Visit: '+(d.userName||'');sub='Role: '+(d.role||'client');}
+  else{title='🔔 '+(d.type||'Activity');sub='';}
+  return `<div class="ni"><div class="ni-i" style="background:${N_B[d.type]||'rgba(79,159,255,.06)'}">${N_I[d.type]||'🔔'}</div><div class="ni-b"><div class="ni-t">${title}</div><div class="ni-s">${sub}</div></div><div class="ni-time">${t}</div></div>`;
+}
+
+async function loadNotifs(){
+  const el=document.getElementById('notifsL');
+  try{
+    const snap=await db.collection('notifications').orderBy('time','desc').limit(50).get();
+    el.innerHTML=snap.empty?'<div class="empty">No notifications yet.</div>':snap.docs.map(d=>niHTML(d.data())).join('');
+  }catch(e){el.innerHTML='<div class="empty">Could not load: '+e.message+'</div>';}
+}
+
+// ── APPROVALS ─────────────────────────────────────
+async function loadApprovals(){
+  const el=document.getElementById('approvalsList');
+  try{
+    const snap=await db.collection('pendingInvoices').orderBy('time','desc').get();
+    if(snap.empty){el.innerHTML='<div class="empty">No pending invoice approvals.</div>';return;}
+    const pending=snap.docs.filter(d=>d.data().status==='pending');
+    const approved=snap.docs.filter(d=>d.data().status==='approved');
+    
+    // Show badge if pending
+    const badge=document.getElementById('approvBadge');
+    if(badge&&pending.length>0){badge.style.display='inline';badge.textContent=pending.length;}
+    
+    el.innerHTML=snap.docs.map(doc=>{
+      const d=doc.data();
+      const t=d.time?new Date(d.time.toDate()).toLocaleDateString('en-IN'):'—';
+      const isPending=d.status==='pending';
+      const total='₹'+(d.total||0).toLocaleString('en-IN');
+      return `<div class="mr" style="flex-wrap:wrap;gap:.8rem;">
+        <div style="flex:1;min-width:200px;">
+          <div class="mr-n">${d.invNum||'—'} — ${d.client||'—'}</div>
+          <div class="mr-e">Project: ${d.project||'—'} · Total: ${total} · By: ${d.submittedByName||'—'} · ${t}</div>
+          <div style="margin-top:.4rem;font-size:.75rem;color:#8899bb;">Items: ${(d.items||[]).map(i=>i.desc+' (₹'+i.total+')').join(', ')}</div>
+        </div>
+        <div style="display:flex;gap:.5rem;align-items:center;">
+          <span class="badge ${isPending?'b-y':'b-g'}">${isPending?'Pending':'Approved'}</span>
+          ${isPending?`<button class="btn-sm btn-t" onclick="approveInvoice('${doc.id}','${d.phone||''}','${d.client||''}','${total}')">✅ Approve & Notify</button>
+          <button class="btn-sm btn-r" onclick="rejectInvoice('${doc.id}')">❌ Reject</button>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){el.innerHTML='<div class="empty">Error: '+e.message+'</div>';}
+}
+
+async function approveInvoice(id,phone,client,total){
+  if(!confirm('Approve and notify team to send invoice to '+client+'?'))return;
+  try{
+    if(!firebase.auth().currentUser) await firebase.auth().signInAnonymously();
+    await db.collection('pendingInvoices').doc(id).update({status:'approved',approvedAt:firebase.firestore.FieldValue.serverTimestamp(),approvedBy:'Pranav (Chef)'});
+    // Alert team via SMS
+    const msg='✅ Invoice APPROVED by Pranav (Chef)!\nAmol Soft\n\nClient: '+client+'\nTotal: '+total+'\n\nYou can now send this invoice to the client.';
+    await fetch('https://www.fast2sms.com/dev/bulkV2?authorization='+FAST2SMS_KEY+'&route=q&message='+encodeURIComponent(msg)+'&flash=0&numbers=9021597349,8459484110',
+      {method:'GET',headers:{'cache-control':'no-cache'}});
+    toast('✅ Invoice approved! Team notified via SMS.');
+    loadApprovals();
+  }catch(e){toast('Error: '+e.message);}
+}
+
+async function rejectInvoice(id){
+  const reason=prompt('Reason for rejection (optional):');
+  try{
+    if(!firebase.auth().currentUser) await firebase.auth().signInAnonymously();
+    await db.collection('pendingInvoices').doc(id).update({status:'rejected',rejectedAt:firebase.firestore.FieldValue.serverTimestamp(),rejectionReason:reason||''});
+    toast('Invoice rejected.');
+    loadApprovals();
+  }catch(e){toast('Error: '+e.message);}
+}
+
+// ── TOAST ─────────────────────────────────────────
+let tT;
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('on'),3200);}
+</script>
+</body>
+</html>

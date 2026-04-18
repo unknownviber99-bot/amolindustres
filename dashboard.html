@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Dashboard — Amol Soft Developing Industry</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<!-- jsPDF for invoice PDF generation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script>
+const firebaseConfig={apiKey:"AIzaSyAa_XwFUGvozo9q002vpCc2Cv9qN8Ey7E4",authDomain:"amolsoft-ada6b.firebaseapp.com",projectId:"amolsoft-ada6b",storageBucket:"amolsoft-ada6b.firebasestorage.app",messagingSenderId:"878640194459",appId:"1:878640194459:web:435be03fd3b828014ef73e"};
+firebase.initializeApp(firebaseConfig);
+  // Enable offline cache for instant loading
+  firebase.firestore().enablePersistence({synchronizeTabs:true}).catch(()=>{});
+const FAST2SMS_KEY='yZIH31o0GU7NfWVD5OrXnvcw29PJgRaibMBxpmh6QkqtslTeuF4VZIwmJ6pB8lqfaskb1i0RYGAQSXvP';
+const TEAM_NUMBERS='9021597349,8208519190,8459484110';
+const ADMIN_EMAILS=['siddhartdahatode62@gmail.com','siddharthdahatonde62@gmail.com','unknownviber99@gmail.com'];
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Outfit',sans-serif;background:#050810;color:#eef2ff;height:100vh;display:flex;overflow:hidden;}
+.sidebar{width:220px;background:#0c0f1e;border-right:1px solid rgba(99,179,255,.1);display:flex;flex-direction:column;flex-shrink:0;}
+.s-logo{display:flex;align-items:center;gap:.6rem;padding:1.2rem;border-bottom:1px solid rgba(99,179,255,.1);}
+.s-logo-icon{width:34px;height:34px;background:linear-gradient(135deg,#4f9fff,#00e5c8);border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#050810;}
+.s-logo-text{font-family:'Playfair Display',serif;font-weight:700;font-size:.9rem;}
+.s-logo-text span{color:#4f9fff;}
+/* Profile in sidebar */
+.s-profile{display:flex;align-items:center;gap:.7rem;padding:1rem 1.2rem;border-bottom:1px solid rgba(99,179,255,.1);cursor:pointer;transition:background .2s;}
+.s-profile:hover{background:rgba(79,159,255,.05);}
+.s-av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#4f9fff,#00e5c8);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.95rem;color:#050810;flex-shrink:0;overflow:hidden;}
+.s-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.s-name{font-size:.82rem;font-weight:600;}
+.s-role{font-size:.68rem;color:#00e5c8;}
+.s-edit-hint{font-size:.65rem;color:#8899bb;margin-top:.1rem;}
+.s-nav{flex:1;padding:.5rem;overflow-y:auto;}
+.s-item{display:flex;align-items:center;gap:.7rem;padding:.65rem .9rem;border-radius:10px;cursor:pointer;color:#8899bb;font-size:.85rem;margin-bottom:.15rem;transition:all .2s;user-select:none;}
+.s-item:hover{background:rgba(255,255,255,.04);color:#eef2ff;}
+.s-item.on{background:rgba(79,159,255,.12);color:#4f9fff;}
+.s-badge{margin-left:auto;background:#ff6b8a;color:#fff;font-size:.62rem;font-weight:700;padding:.1rem .4rem;border-radius:50px;animation:pulse 2s infinite;}
+.s-bottom{padding:.7rem;border-top:1px solid rgba(99,179,255,.1);}
+.s-logout{display:flex;align-items:center;gap:.7rem;padding:.65rem .9rem;border-radius:10px;cursor:pointer;color:#8899bb;font-size:.85rem;transition:all .2s;}
+.s-logout:hover{background:rgba(255,107,138,.08);color:#ff6b8a;}
+
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.topbar{padding:.9rem 1.5rem;border-bottom:1px solid rgba(99,179,255,.1);background:#0c0f1e;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.topbar h2{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:800;}
+.topbar-right{display:flex;align-items:center;gap:.8rem;}
+.notif-bell{position:relative;cursor:pointer;font-size:1.2rem;}
+.notif-dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:#ff6b8a;border-radius:50%;display:none;border:2px solid #0c0f1e;}
+.clock{font-size:.78rem;color:#8899bb;}
+
+/* PAGES */
+.pg{display:none;flex:1;overflow:hidden;}
+.pg.on{display:flex;flex-direction:column;}
+
+/* COMMON */
+.scroll{flex:1;overflow-y:auto;padding:1.5rem;}
+.card{background:#111527;border:1px solid rgba(99,179,255,.1);border-radius:16px;padding:1.5rem;margin-bottom:1.2rem;position:relative;overflow:hidden;}
+.card-bar{position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#4f9fff,#00e5c8);}
+.card h3{font-family:'Playfair Display',serif;font-weight:700;font-size:1.05rem;margin-bottom:.25rem;}
+.card-sub{color:#8899bb;font-size:.8rem;margin-bottom:1.2rem;}
+.fg{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.9rem;}
+.fg label{font-size:.72rem;color:#8899bb;letter-spacing:.05em;}
+.fg input,.fg select,.fg textarea{background:rgba(255,255,255,.05);border:1px solid rgba(99,179,255,.15);border-radius:9px;padding:.68rem .9rem;color:#eef2ff;font-family:'Outfit',sans-serif;font-size:.87rem;outline:none;width:100%;transition:all .3s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:rgba(79,159,255,.45);}
+.fg select option{background:#111527;}
+.fg textarea{resize:vertical;min-height:80px;}
+.btn{padding:.72rem 1.5rem;border-radius:10px;font-family:'Outfit',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;border:none;transition:all .3s;}
+.btn-primary{background:linear-gradient(135deg,#4f9fff,#00e5c8);color:#050810;}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px);}
+.btn-sm{padding:.38rem .85rem;border-radius:8px;font-size:.76rem;font-family:'Outfit',sans-serif;cursor:pointer;border:none;transition:all .2s;}
+.btn-teal{background:rgba(0,229,200,.1);border:1px solid rgba(0,229,200,.2);color:#00e5c8;}
+.btn-rose{background:rgba(255,107,138,.1);border:1px solid rgba(255,107,138,.2);color:#ff6b8a;}
+.btn-gold{background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.2);color:#f5c842;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;}
+.full{grid-column:1/-1;}
+.suc-msg{background:rgba(0,229,200,.08);border:1px solid rgba(0,229,200,.25);border-radius:10px;padding:.8rem 1rem;color:#00e5c8;font-size:.84rem;margin-top:.8rem;display:none;}
+.err-msg{background:rgba(255,107,138,.08);border:1px solid rgba(255,107,138,.25);border-radius:10px;padding:.8rem 1rem;color:#ff8fa3;font-size:.84rem;margin-top:.8rem;display:none;}
+
+/* DASHBOARD */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.2rem;}
+.sc{background:#111527;border:1px solid rgba(99,179,255,.1);border-radius:14px;padding:1.1rem 1.4rem;}
+.sc-l{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:#8899bb;margin-bottom:.3rem;}
+.sc-v{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:900;background:linear-gradient(135deg,#4f9fff,#00e5c8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.sc-s{font-size:.7rem;color:#8899bb;margin-top:.1rem;}
+.qa{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-bottom:1.2rem;}
+.qb{background:#111527;border:1px solid rgba(99,179,255,.1);border-radius:13px;padding:1.1rem;display:flex;align-items:center;gap:.85rem;cursor:pointer;transition:all .25s;}
+.qb:hover{border-color:rgba(79,159,255,.3);transform:translateY(-2px);}
+.qi{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;}
+.qt h4{font-size:.86rem;font-weight:600;margin-bottom:.1rem;}
+.qt p{font-size:.7rem;color:#8899bb;}
+.ci{background:#0c0f1e;border:1px solid rgba(99,179,255,.08);border-radius:11px;padding:.85rem 1.1rem;display:flex;align-items:center;gap:.8rem;margin-bottom:.45rem;}
+.ci-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.88rem;flex-shrink:0;}
+.ci-n{font-size:.86rem;font-weight:600;}
+.ci-p{font-size:.73rem;color:#8899bb;}
+
+/* CHAT */
+.chat-wrap{display:flex;flex:1;overflow:hidden;}
+.rooms{width:235px;border-right:1px solid rgba(99,179,255,.1);display:flex;flex-direction:column;flex-shrink:0;}
+.rooms-h{padding:.9rem 1rem;border-bottom:1px solid rgba(99,179,255,.1);font-weight:600;font-size:.87rem;}
+.rooms-l{flex:1;overflow-y:auto;padding:.4rem;}
+.rb{display:flex;align-items:center;gap:.65rem;padding:.7rem;border-radius:11px;cursor:pointer;transition:all .2s;margin-bottom:.2rem;}
+.rb:hover{background:rgba(255,255,255,.04);}
+.rb.on{background:rgba(79,159,255,.1);border:1px solid rgba(79,159,255,.18);}
+.re{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.rn{font-size:.83rem;font-weight:600;}
+.rd{font-size:.68rem;color:#8899bb;}
+.chat-main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.chat-ph{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#8899bb;gap:.4rem;text-align:center;}
+.chat-active{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.chat-h{padding:.8rem 1.1rem;border-bottom:1px solid rgba(99,179,255,.1);display:flex;align-items:center;gap:.7rem;flex-shrink:0;}
+.chat-h h4{font-size:.88rem;font-weight:600;}
+.chat-h p{font-size:.68rem;color:#00e5c8;}
+.msgs{flex:1;overflow-y:auto;padding:.9rem;display:flex;flex-direction:column;gap:.45rem;}
+.msg{display:flex;align-items:flex-end;gap:.4rem;max-width:72%;}
+.msg.me{align-self:flex-end;flex-direction:row-reverse;}
+.m-av{width:24px;height:24px;border-radius:50%;background:#161929;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;flex-shrink:0;}
+.msg.me .m-av{background:linear-gradient(135deg,#4f9fff,#00e5c8);color:#050810;}
+.m-sdr{font-size:.63rem;color:#8899bb;margin-bottom:.1rem;}
+.msg.me .m-sdr{text-align:right;}
+.m-bbl{padding:.52rem .82rem;border-radius:12px;font-size:.875rem;line-height:1.5;}
+.msg.other .m-bbl{background:#161929;border:1px solid rgba(99,179,255,.08);border-bottom-left-radius:3px;}
+.msg.me .m-bbl{background:linear-gradient(135deg,#4f9fff,#00e5c8);color:#050810;border-bottom-right-radius:3px;}
+.m-t{font-size:.6rem;color:#8899bb;margin-top:.1rem;}
+.msg.me .m-t{text-align:right;}
+.chat-inp{padding:.75rem .9rem;border-top:1px solid rgba(99,179,255,.1);display:flex;gap:.55rem;align-items:flex-end;flex-shrink:0;}
+.ci-ta{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(99,179,255,.15);border-radius:11px;padding:.62rem .88rem;color:#eef2ff;font-family:'Outfit',sans-serif;font-size:.87rem;outline:none;resize:none;min-height:38px;max-height:100px;transition:border-color .3s;}
+.ci-ta:focus{border-color:rgba(79,159,255,.4);}
+.snd{width:38px;height:38px;background:linear-gradient(135deg,#4f9fff,#00e5c8);border:none;border-radius:9px;cursor:pointer;color:#050810;font-size:.95rem;flex-shrink:0;}
+.snd:hover{opacity:.88;}
+
+/* PROFILE */
+.profile-wrap{max-width:600px;}
+.avatar-section{display:flex;align-items:center;gap:1.5rem;margin-bottom:1.5rem;}
+.big-av{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#4f9fff,#00e5c8);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:2rem;font-weight:800;color:#050810;overflow:hidden;flex-shrink:0;}
+.big-av img{width:100%;height:100%;object-fit:cover;}
+.av-info h3{font-family:'Playfair Display',serif;font-weight:700;font-size:1.2rem;}
+.av-info p{color:#8899bb;font-size:.82rem;margin:.2rem 0 .6rem;}
+
+/* BILLING */
+.billing-wrap{max-width:760px;}
+.invoice-preview{background:#0c0f1e;border:1px solid rgba(99,179,255,.1);border-radius:14px;padding:1.5rem;margin-bottom:1.2rem;}
+.inv-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid rgba(99,179,255,.08);}
+.inv-logo{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:800;}
+.inv-logo span{color:#4f9fff;}
+.inv-title{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:#8899bb;margin-top:.2rem;}
+.inv-num{text-align:right;}
+.inv-num h4{font-family:'Playfair Display',serif;font-weight:700;color:#4f9fff;}
+.inv-num p{font-size:.75rem;color:#8899bb;}
+.inv-table{width:100%;border-collapse:collapse;margin:1rem 0;}
+.inv-table th{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:#8899bb;padding:.5rem .8rem;border-bottom:1px solid rgba(99,179,255,.1);text-align:left;}
+.inv-table td{padding:.65rem .8rem;border-bottom:1px solid rgba(99,179,255,.05);font-size:.84rem;}
+.inv-total{display:flex;justify-content:flex-end;margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(99,179,255,.1);}
+.inv-total-box{text-align:right;}
+.inv-total-box .label{font-size:.75rem;color:#8899bb;margin-bottom:.3rem;}
+.inv-total-box .amount{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:#00e5c8;}
+.items-list{margin-bottom:1rem;}
+.item-row{display:grid;grid-template-columns:1fr auto auto auto;gap:.6rem;align-items:center;margin-bottom:.5rem;background:rgba(255,255,255,.03);border-radius:8px;padding:.5rem .7rem;}
+.add-item-btn{display:flex;align-items:center;gap:.4rem;background:rgba(79,159,255,.08);border:1px dashed rgba(79,159,255,.2);color:#4f9fff;padding:.55rem 1rem;border-radius:9px;cursor:pointer;font-size:.82rem;width:100%;justify-content:center;transition:all .2s;font-family:'Outfit',sans-serif;}
+.add-item-btn:hover{background:rgba(79,159,255,.14);}
+
+/* NOTIFICATIONS */
+.ni{background:#0c0f1e;border:1px solid rgba(99,179,255,.08);border-radius:11px;padding:.82rem 1rem;display:flex;align-items:center;gap:.75rem;margin-bottom:.45rem;}
+.ni-ico{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
+.ni-body{flex:1;}
+.ni-title{font-size:.82rem;font-weight:500;margin-bottom:.1rem;}
+.ni-sub{font-size:.7rem;color:#8899bb;}
+.ni-time{font-size:.66rem;color:#8899bb;white-space:nowrap;}
+
+/* MODAL */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center;padding:1rem;}
+.modal.open{display:flex;}
+.modal-box{background:#111527;border:1px solid rgba(99,179,255,.18);border-radius:22px;padding:2.2rem;width:100%;max-width:480px;position:relative;overflow:hidden;max-height:90vh;overflow-y:auto;}
+.modal-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#4f9fff,#00e5c8);}
+.modal-close{position:absolute;top:1rem;right:1.2rem;background:none;border:none;color:#8899bb;font-size:1.1rem;cursor:pointer;}
+
+/* ALERT TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#111527;border:1px solid rgba(0,229,200,.3);border-radius:13px;padding:.8rem 1.2rem;font-size:.83rem;color:#00e5c8;z-index:9999;opacity:0;transition:all .35s;pointer-events:none;max-width:300px;}
+.toast.show{opacity:1;}
+.toast.alert{border-color:rgba(245,200,66,.4);color:#f5c842;}
+
+/* ALERT BANNER */
+.alert-banner{background:rgba(245,200,66,.08);border-bottom:1px solid rgba(245,200,66,.2);padding:.6rem 1.5rem;font-size:.82rem;color:#f5c842;display:none;align-items:center;gap:.6rem;flex-shrink:0;}
+.alert-banner.show{display:flex;}
+
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="s-logo">
+    <div class="s-logo-icon">AS</div>
+    <div class="s-logo-text">Amol Soft <span>Dev</span></div>
+  </div>
+  <!-- Clickable profile -->
+  <div class="s-profile" onclick="go('profile',this)" title="Click to edit profile">
+    <div class="s-av" id="sAv">A</div>
+    <div>
+      <div class="s-name" id="sName">Loading...</div>
+      <div class="s-role" id="sRole">👤 Client</div>
+      <div class="s-edit-hint">✏️ Edit Profile</div>
+    </div>
+  </div>
+  <nav class="s-nav">
+    <div class="s-item on" id="ni-dashboard" onclick="go('dashboard',this)">🏠 &nbsp;Dashboard</div>
+    <div class="s-item" id="ni-chat" onclick="go('chat',this)">💬 &nbsp;Team Chat <span class="s-badge" id="chatBadge" style="display:none">!</span></div>
+    <div class="s-item" id="ni-order" onclick="go('order',this)">📋 &nbsp;Place Order</div>
+    <div class="s-item" id="ni-billing" onclick="go('billing',this)" style="display:none;">🧾 &nbsp;Billing</div>
+    <div class="s-item" id="ni-notifications" onclick="go('notifications',this)">🔔 &nbsp;Notifications <span class="s-badge" id="notifBadge" style="display:none">!</span></div>
+    <div class="s-item" id="ni-admin" onclick="location.href='admin.html'" style="display:none;">⚙️ &nbsp;Admin Panel</div>
+    <div class="s-item" onclick="window.open('index.html')">🌐 &nbsp;Website</div>
+  </nav>
+  <div class="s-bottom">
+    <div class="s-logout" onclick="doLogout()">🚪 &nbsp;Sign Out</div>
+  </div>
+</aside>
+
+<div class="main">
+  <!-- Alert banner for new activity -->
+  <div class="alert-banner" id="alertBanner">
+    <span>🔔</span><span id="alertText">New activity!</span>
+    <span style="margin-left:auto;cursor:pointer;color:#8899bb;" onclick="this.parentElement.classList.remove('show')">✕</span>
+  </div>
+  <div class="topbar">
+    <h2 id="pgTitle">Dashboard</h2>
+    <div class="topbar-right">
+      <div class="notif-bell" onclick="go('notifications',document.getElementById('ni-notifications'))">
+        🔔<div class="notif-dot" id="notifDot"></div>
+      </div>
+      <span class="clock" id="clock"></span>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="pg on" id="pg-dashboard">
+    <div class="scroll">
+      <div class="stats">
+        <div class="sc"><div class="sc-l">Your Orders</div><div class="sc-v" id="stO">0</div><div class="sc-s">Total submitted</div></div>
+        <div class="sc"><div class="sc-l">Messages Sent</div><div class="sc-v" id="stM">0</div><div class="sc-s">All chat rooms</div></div>
+        <div class="sc"><div class="sc-l">Account</div><div class="sc-v" style="font-size:1rem;padding-top:.5rem;">✅ Active</div><div class="sc-s" id="stRole">Client</div></div>
+      </div>
+      <div class="qa">
+        <div class="qb" onclick="go('chat',document.getElementById('ni-chat'))"><div class="qi" style="background:rgba(79,159,255,.1);">💬</div><div class="qt"><h4>Team Chat</h4><p>Chat with Siddharth, Pranav & Pratik</p></div></div>
+        <div class="qb" onclick="go('order',document.getElementById('ni-order'))"><div class="qi" style="background:rgba(0,229,200,.1);">📋</div><div class="qt"><h4>Place Order</h4><p>Submit a new project</p></div></div>
+        <div class="qb" onclick="go('profile',null)"><div class="qi" style="background:rgba(245,200,66,.1);">👤</div><div class="qt"><h4>My Profile</h4><p>Edit your details & photo</p></div></div>
+        <div class="qb" onclick="go('notifications',document.getElementById('ni-notifications'))"><div class="qi" style="background:rgba(255,107,138,.1);">🔔</div><div class="qt"><h4>Notifications</h4><p>View all activity alerts</p></div></div>
+      </div>
+      <div style="font-family:'Playfair Display',serif;font-weight:700;font-size:1rem;margin-bottom:.8rem;">Team Contacts</div>
+      <div class="ci"><div class="ci-av" style="background:rgba(0,229,200,.15);color:#00e5c8;">S</div><div><div class="ci-n">Siddharth — Team Incharge</div><div class="ci-p">📞 9021597349 · <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="691a000d0d01081b1d0d0801081d060d0c5f5b290e04080005470a0604">[email&#160;protected]</a></div></div></div>
+      <div class="ci"><div class="ci-av" style="background:rgba(79,159,255,.15);color:#4f9fff;">P</div><div><div class="ci-n">Pranav — Lead Developer</div><div class="ci-p">📞 8208519190</div></div></div>
+      <div class="ci"><div class="ci-av" style="background:rgba(245,200,66,.15);color:#f5c842;">P</div><div><div class="ci-n">Pratik — Team Manager</div><div class="ci-p">📞 8459484110</div></div></div>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="pg" id="pg-chat">
+    <div class="chat-wrap">
+      <div class="rooms">
+        <div class="rooms-h">💬 Chat Rooms</div>
+        <div class="rooms-l">
+          <div class="rb" id="rb-general" onclick="openRoom('general','General Chat','💬')"><div class="re" style="background:linear-gradient(135deg,#4f9fff,#00e5c8);">💬</div><div><div class="rn">General Chat</div><div class="rd">All team members</div></div></div>
+          <div class="rb" id="rb-orders" onclick="openRoom('orders','Orders & Projects','📋')"><div class="re" style="background:linear-gradient(135deg,#f5c842,#ff8c00);">📋</div><div><div class="rn">Orders & Projects</div><div class="rd">Discuss orders</div></div></div>
+          <div class="rb" id="rb-support" onclick="openRoom('support','Technical Support','🔧')"><div class="re" style="background:linear-gradient(135deg,#ff6b8a,#ff4f81);">🔧</div><div><div class="rn">Technical Support</div><div class="rd">Get help fast</div></div></div>
+        </div>
+      </div>
+      <div class="chat-main">
+        <div class="chat-ph" id="chatPh"><div style="font-size:2.5rem;">💬</div><h4 style="font-family:'Playfair Display',serif;margin:.3rem 0;">Select a room</h4><p style="font-size:.8rem;">Choose from the left to start chatting</p></div>
+        <div class="chat-active" id="chatAct" style="display:none;">
+          <div class="chat-h"><span id="chEmoji" style="font-size:1.3rem;">💬</span><div><h4 id="chName">General Chat</h4><p>🟢 Team is here</p></div></div>
+          <div class="msgs" id="msgsArea"></div>
+          <div class="chat-inp">
+            <textarea class="ci-ta" id="msgInp" placeholder="Type message... (Enter to send)" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
+            <button class="snd" onclick="sendMsg()">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ORDER -->
+  <div class="pg" id="pg-order">
+    <div class="scroll">
+      <div style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:800;margin-bottom:.25rem;">Place New Order</div>
+      <div style="color:#8899bb;font-size:.82rem;margin-bottom:1.2rem;">Team gets SMS alert instantly when you submit.</div>
+      <div class="card">
+        <div class="card-bar"></div>
+        <div class="form-grid">
+          <div class="fg"><label>Service *</label><select id="oSvc"><option value="">Select...</option><option>Website Development</option><option>Web Application</option><option>E-Commerce Store</option><option>Custom Software</option><option>UI/UX Design</option><option>Maintenance & Support</option><option>Other</option></select></div>
+          <div class="fg"><label>Budget</label><select id="oBdg"><option value="">Select...</option><option>Under ₹10,000</option><option>₹10,000–₹30,000</option><option>₹30,000–₹75,000</option><option>₹75,000–₹1,50,000</option><option>₹1,50,000+</option></select></div>
+          <div class="fg"><label>Timeline</label><select id="oTml"><option>Flexible</option><option>ASAP (1–2 weeks)</option><option>1 Month</option><option>2–3 Months</option></select></div>
+          <div class="fg"><label>Priority</label><select id="oPri"><option>Normal</option><option>High</option><option>Urgent</option></select></div>
+          <div class="fg full"><label>Project Title *</label><input type="text" id="oTit" placeholder="e.g. Restaurant website with online menu"/></div>
+          <div class="fg full"><label>Description *</label><textarea id="oDes" placeholder="Describe what you need in detail..."></textarea></div>
+        </div>
+        <button class="btn btn-primary" id="oBtn" onclick="submitOrder()">✦ Submit Order — Team Gets SMS Alert</button>
+        <div class="suc-msg" id="oSuc">✅ Order submitted! Your team has been alerted via SMS. They'll contact you within 2 hours.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="pg" id="pg-profile">
+    <div class="scroll">
+      <div class="profile-wrap">
+        <div style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:800;margin-bottom:1.2rem;">My Profile</div>
+        <div class="card">
+          <div class="card-bar"></div>
+          <div class="avatar-section">
+            <div class="big-av" id="bigAv">A</div>
+            <div class="av-info">
+              <h3 id="profName">Loading...</h3>
+              <p id="profEmail">—</p>
+              <label style="display:inline-flex;align-items:center;gap:.4rem;background:rgba(79,159,255,.08);border:1px solid rgba(79,159,255,.2);color:#4f9fff;padding:.38rem .9rem;border-radius:8px;cursor:pointer;font-size:.78rem;font-family:'Outfit',sans-serif;">
+                📷 Change Photo <input type="file" id="photoFile" accept="image/*" style="display:none;" onchange="uploadPhoto(this)"/>
+              </label>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="fg"><label>First Name</label><input type="text" id="pfName" placeholder="First name"/></div>
+            <div class="fg"><label>Last Name</label><input type="text" id="plName" placeholder="Last name"/></div>
+            <div class="fg"><label>Phone Number</label><input type="tel" id="pPhone" placeholder="9021597349"/></div>
+            <div class="fg"><label>Email (read only)</label><input type="email" id="pEmail" readonly style="opacity:.6;cursor:not-allowed;"/></div>
+            <div class="fg full"><label>About / Bio</label><textarea id="pBio" placeholder="Tell us about yourself or your business..."></textarea></div>
+          </div>
+          <button class="btn btn-primary" onclick="saveProfile()">💾 Save Profile</button>
+          <div class="suc-msg" id="profSuc">✅ Profile updated successfully!</div>
+          <div class="err-msg" id="profErr"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BILLING (Team only) -->
+  <div class="pg" id="pg-billing">
+    <div class="scroll">
+      <div class="billing-wrap">
+        <div style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:800;margin-bottom:.25rem;">🧾 Create Invoice</div>
+        <div style="color:#8899bb;font-size:.82rem;margin-bottom:1.2rem;">Invoice auto-downloads as PDF and can be shared to client's WhatsApp.</div>
+        <div class="card">
+          <div class="card-bar"></div>
+          <h3>Invoice Details</h3>
+          <div class="card-sub">Fill in client and service details below.</div>
+          <div class="form-grid">
+            <div class="fg"><label>Client Name *</label><input type="text" id="invClient" placeholder="Client full name"/></div>
+            <div class="fg"><label>Client Phone (for WhatsApp)</label><input type="tel" id="invPhone" placeholder="9876543210"/></div>
+            <div class="fg"><label>Client Email</label><input type="email" id="invEmail" placeholder="client@email.com"/></div>
+            <div class="fg"><label>Invoice # (auto)</label><input type="text" id="invNum" placeholder="Auto-generated" readonly style="opacity:.6;"/></div>
+            <div class="fg full"><label>Project / Service Description</label><input type="text" id="invProject" placeholder="e.g. Restaurant Website Development"/></div>
+          </div>
+          <div style="font-size:.78rem;color:#8899bb;letter-spacing:.06em;margin-bottom:.6rem;text-transform:uppercase;">Line Items</div>
+          <div class="items-list" id="itemsList">
+            <div class="item-row" id="item-0">
+              <input type="text" style="background:rgba(255,255,255,.05);border:1px solid rgba(99,179,255,.15);border-radius:8px;padding:.5rem .7rem;color:#eef2ff;font-family:'Outfit',sans-serif;font-size:.84rem;outline:none;width:100%;" placeholder="Item description" id="item-desc-0"/>
+              <input type="number" style="background:rgba(255,255,255,.05);border:1px solid rgba(99,179,255,.15);border-radius:8px;padding:.5rem .7rem;color:#eef2ff;font-family:'Outfit',sans-serif;font-size:.84rem;outline:none;width:60px;" placeholder="Qty" id="item-qty-0" value="1" onchange="calcTotal()"/>
+              <input type="number" style="background:rgba(255,255,255,.05);border:1px solid rgba(99,179,255,.15);border-radius:8px;padding:.5rem .7rem;color:#eef2ff;font-family:'Outfit',sans-serif;font-size:.84rem;outline:none;width:100px;" placeholder="Rate ₹" id="item-rate-0" onchange="calcTotal()"/>
+              <span style="color:#8899bb;font-size:.82rem;white-space:nowrap;" id="item-total-0">₹0</span>
+            </div>
+          </div>
+          <button class="add-item-btn" onclick="addItem()">+ Add Line Item</button>
+          <div style="display:flex;justify-content:flex-end;margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(99,179,255,.08);">
+            <div>
+              <div style="font-size:.75rem;color:#8899bb;margin-bottom:.3rem;text-align:right;">Total Amount</div>
+              <div style="font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:#00e5c8;" id="invTotal">₹0</div>
+            </div>
+          </div>
+          <div class="fg" style="margin-top:1rem;"><label>Notes / Terms</label><textarea id="invNotes" placeholder="Payment due within 7 days. Thank you for your business!"></textarea></div>
+          <div style="display:flex;gap:.8rem;flex-wrap:wrap;margin-top:.5rem;">
+            <button class="btn btn-primary" onclick="generateInvoice(false)">⬇️ Download PDF</button>
+            <button class="btn" style="background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.2);color:#f5c842;" onclick="submitForApproval()">📤 Submit for Chef Approval</button>
+            <button class="btn" id="sendToClientBtn" style="background:rgba(37,211,102,.1);border:1px solid rgba(37,211,102,.2);color:#25d366;display:none;" onclick="generateInvoice(true)">✅ Send to Client (Approved)</button>
+          </div>
+          <div id="approvalStatus" style="display:none;background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.2);border-radius:10px;padding:.8rem 1rem;color:#f5c842;font-size:.83rem;margin-top:.8rem;">
+            ⏳ Waiting for Pranav (Chef) to approve this invoice...
+          </div>
+          <div class="suc-msg" id="invSuc"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATIONS -->
+  <div class="pg" id="pg-notifications">
+    <div class="scroll">
+      <div style="font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:800;margin-bottom:.25rem;">Notifications</div>
+      <div style="color:#8899bb;font-size:.82rem;margin-bottom:1.2rem;">All your activity alerts in real-time.</div>
+      <div id="nList"><div style="color:#8899bb;font-size:.85rem;">Loading...</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+let CU=null,UD=null,curRoom=null,msgUnsub=null,itemCount=1;
+const ADMIN_EMAILS=['siddhartdahatode62@gmail.com','siddharthdahatonde62@gmail.com','unknownviber99@gmail.com'];
+
+// Clock
+setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});},1000);
+
+// ── Navigation ─────────────────────────────────────
+function go(id,navEl){
+  document.querySelectorAll('.pg').forEach(p=>{p.style.display='none';p.classList.remove('on');});
+  document.querySelectorAll('.s-item').forEach(n=>n.classList.remove('on'));
+  const pg=document.getElementById('pg-'+id);
+  if(pg){pg.style.display='flex';pg.style.flexDirection='column';pg.classList.add('on');}
+  if(navEl)navEl.classList.add('on');
+  else{const ni=document.getElementById('ni-'+id);if(ni)ni.classList.add('on');}
+  document.getElementById('pgTitle').textContent={dashboard:'Dashboard',chat:'Team Chat',order:'Place Order',profile:'My Profile',billing:'Billing & Invoices',notifications:'Notifications'}[id]||id;
+  if(id==='notifications'){loadNotifs();document.getElementById('notifDot').style.display='none';document.getElementById('notifBadge').style.display='none';}
+  if(id==='dashboard')loadStats();
+  if(id==='billing')document.getElementById('invNum').value='INV-'+Date.now().toString().slice(-6);
+}
+
+window.addEventListener('load',()=>{document.getElementById('pg-dashboard').style.display='flex';document.getElementById('pg-dashboard').style.flexDirection='column';});
+
+// ── Auth ──────────────────────────────────────────
+firebase.auth().onAuthStateChanged(async user=>{
+  if(!user){
+    // Check localStorage cache before redirecting
+    const cached=localStorage.getItem('asdi_user');
+    if(!cached){window.location.href='login.html';return;}
+    // Wait 4 seconds for Firebase to catch up
+    setTimeout(()=>{if(!firebase.auth().currentUser)window.location.href='login.html';},4000);
+    return;
+  }
+  CU=user;
+  
+  // Use cached data immediately so dashboard shows fast
+  const cached=localStorage.getItem('asdi_user');
+  if(cached){
+    try{
+      const c=JSON.parse(cached);
+      UD={name:c.name||user.displayName||user.email,role:c.role||'client',email:user.email};
+      updateSidebarUI();
+    }catch(e){}
+  } else {
+    UD={name:user.displayName||user.email,role:'client',email:user.email};
+    updateSidebarUI();
+  }
+
+  // Load real data from Firestore in background
+  try{
+    const s=await firebase.firestore().collection('users').doc(user.uid).get();
+    if(s.exists){
+      UD={...s.data(),email:user.email};
+    } else {
+      // New user - create their document
+      const newUser={
+        name:user.displayName||user.email,email:user.email,
+        role:ADMIN_EMAILS.includes(user.email)?'team':'client',
+        photo:user.photoURL||'',
+        createdAt:firebase.firestore.FieldValue.serverTimestamp()
+      };
+      await firebase.firestore().collection('users').doc(user.uid).set(newUser);
+      UD={...newUser};
+    }
+    // Update localStorage cache
+    localStorage.setItem('asdi_user',JSON.stringify({email:UD.email,role:UD.role,name:UD.name}));
+  }catch(e){
+    console.log('Firestore load failed, using cached data');
+    // Keep using cached data
+  }
+  
+  updateSidebarUI();
+  loadStats();
+  startRealTimeAlerts();
+  
+  // Show billing and admin for team
+  if(UD.role==='team'||ADMIN_EMAILS.includes(user.email)||user.email.includes("pranav")||UD?.name?.toLowerCase().includes("pranav")){
+    document.getElementById('ni-billing').style.display='flex';
+  }
+  if(ADMIN_EMAILS.includes(user.email)||user.email.includes("pranav")||UD?.name?.toLowerCase().includes("pranav")){
+    document.getElementById('ni-admin').style.display='flex';
+  }
+  
+  // Track visit silently
+  firebase.firestore().collection('notifications').add({
+    type:'visit',userName:UD.name||user.email,userEmail:user.email,
+    userId:user.uid,role:UD.role,time:firebase.firestore.FieldValue.serverTimestamp()
+  }).catch(()=>{});
+});
+
+function updateSidebarUI(){
+  if(!UD)return;
+  const nm=UD.name||CU.email;
+  document.getElementById('sAv').innerHTML=UD.photo?`<img src="${UD.photo}" onerror="this.style.display='none';this.parentElement.textContent='${nm.charAt(0).toUpperCase()}'">`:`${nm.charAt(0).toUpperCase()}`;
+  document.getElementById('bigAv').innerHTML=UD.photo?`<img src="${UD.photo}">`:`${nm.charAt(0).toUpperCase()}`;
+  document.getElementById('sName').textContent=nm;
+  // Custom role labels
+  let roleLabel='👤 Client';
+  if(UD.role==='team'||ADMIN_EMAILS.includes(CU.email)||UD?.name?.toLowerCase().includes('pranav')){
+    if(UD?.name?.toLowerCase().includes('pranav')) roleLabel='💻 Lead Developer';
+    else if(UD?.name?.toLowerCase().includes('pratik')) roleLabel='📊 Team Manager';
+    else if(UD?.name?.toLowerCase().includes('siddharth')) roleLabel='👑 Team Incharge';
+    else roleLabel='⚙️ Team Member';
+  }
+  document.getElementById('sRole').textContent=roleLabel;
+  document.getElementById('stRole').textContent=UD.role==='team'?'Team Member':'Client';
+  // Profile fields
+  const parts=(UD.name||'').split(' ');
+  document.getElementById('pfName').value=parts[0]||'';
+  document.getElementById('plName').value=parts.slice(1).join(' ')||'';
+  document.getElementById('pPhone').value=UD.phone||'';
+  document.getElementById('pEmail').value=UD.email||CU.email||'';
+  document.getElementById('pBio').value=UD.bio||'';
+  document.getElementById('profName').textContent=nm;
+  document.getElementById('profEmail').textContent=UD.email||CU.email||'';
+}
+
+function doLogout(){firebase.auth().signOut().then(()=>{localStorage.clear();window.location.href='login.html';});}
+
+// ── Stats ──────────────────────────────────────────
+async function loadStats(){
+  if(!CU)return;
+  try{
+    const[a,b]=await Promise.all([
+      firebase.firestore().collection('orders').where('userId','==',CU.uid).get(),
+      firebase.firestore().collection('messages').where('uid','==',CU.uid).get()
+    ]);
+    document.getElementById('stO').textContent=a.size;
+    document.getElementById('stM').textContent=b.size;
+  }catch(e){}
+}
+
+// ── INSTANT REAL-TIME ALERTS ──────────────────────
+function startRealTimeAlerts(){
+  // Request browser notification permission
+  if('Notification' in window && Notification.permission==='default'){
+    Notification.requestPermission();
+  }
+
+  // Listen to messages collection in real-time for instant alerts
+  firebase.firestore().collection('messages')
+    .orderBy('time','desc').limit(1)
+    .onSnapshot(snap=>{
+      if(snap.empty)return;
+      const d=snap.docs[0].data();
+      if(!d.time)return;
+      const age=(Date.now()-d.time.toDate().getTime())/1000;
+      if(age<8&&d.uid!==CU.uid){
+        const alertMsg='💬 '+d.name+': '+d.text.substring(0,60);
+        showAlert({type:'message',userName:d.name,room:d.roomId,preview:d.text.substring(0,60)});
+        sendBrowserNotif('New Message — Amol Soft',alertMsg);
+        document.getElementById('notifDot').style.display='block';
+        document.getElementById('notifBadge').style.display='inline-block';
+        document.getElementById('chatBadge').style.display='inline-block';
+      }
+    });
+
+  // Listen to orders in real-time
+  firebase.firestore().collection('orders')
+    .orderBy('time','desc').limit(1)
+    .onSnapshot(snap=>{
+      if(snap.empty)return;
+      const d=snap.docs[0].data();
+      if(!d.time)return;
+      const age=(Date.now()-d.time.toDate().getTime())/1000;
+      if(age<8&&d.userId!==CU.uid){
+        const alertMsg='📋 New Order from '+d.userName+': '+d.title;
+        showAlert({type:'order',userName:d.userName,title:d.title,service:d.service});
+        sendBrowserNotif('New Order — Amol Soft',alertMsg);
+        document.getElementById('notifDot').style.display='block';
+        document.getElementById('notifBadge').style.display='inline-block';
+      }
+    });
+
+  // Listen to notifications
+  firebase.firestore().collection('notifications')
+    .orderBy('time','desc').limit(1)
+    .onSnapshot(snap=>{
+      if(snap.empty)return;
+      const d=snap.docs[0].data();
+      if(!d.time)return;
+      const age=(Date.now()-d.time.toDate().getTime())/1000;
+      if(age<8&&d.userEmail!==CU.email){
+        document.getElementById('notifDot').style.display='block';
+        document.getElementById('notifBadge').style.display='inline-block';
+      }
+    });
+}
+
+function sendBrowserNotif(title,body){
+  if('Notification' in window && Notification.permission==='granted'){
+    new Notification(title,{body,icon:'https://via.placeholder.com/64/4f9fff/050810?text=AS'});
+  }
+}
+
+function showAlert(d){
+  let msg='';
+  if(d.type==='message')msg=`💬 New message from ${d.userName}`;
+  else if(d.type==='order')msg=`📋 New order from ${d.userName}`;
+  else if(d.type==='signup')msg=`👤 New signup: ${d.userName}`;
+  if(!msg)return;
+  const banner=document.getElementById('alertBanner');
+  document.getElementById('alertText').textContent=msg;
+  banner.classList.add('show');
+  setTimeout(()=>banner.classList.remove('show'),8000);
+}
+
+// ── CHAT ──────────────────────────────────────────
+async function alertTeamSMS(msg){
+  try{
+    await fetch(`https://www.fast2sms.com/dev/bulkV2?authorization=${FAST2SMS_KEY}&route=q&message=${encodeURIComponent(msg)}&flash=0&numbers=${TEAM_NUMBERS}`,
+      {method:'GET',headers:{'cache-control':'no-cache'}});
+  }catch(e){console.log('SMS alert:',e);}
+}
+
+function openRoom(id,name,emoji){
+  curRoom=id;
+  document.querySelectorAll('.rb').forEach(b=>b.classList.remove('on'));
+  document.getElementById('rb-'+id).classList.add('on');
+  document.getElementById('chatPh').style.display='none';
+  const ca=document.getElementById('chatAct');ca.style.display='flex';ca.style.flexDirection='column';ca.style.flex='1';ca.style.overflow='hidden';
+  document.getElementById('chEmoji').textContent=emoji;
+  document.getElementById('chName').textContent=name;
+  const area=document.getElementById('msgsArea');
+  area.innerHTML='<div style="color:#8899bb;font-size:.8rem;text-align:center;padding:1rem;">Loading...</div>';
+  if(msgUnsub)msgUnsub();
+  msgUnsub=firebase.firestore().collection('messages')
+    .where('roomId','==',id).orderBy('time','asc')
+    .onSnapshot(snap=>{
+      area.innerHTML='';
+      if(snap.empty){area.innerHTML='<div style="color:#8899bb;font-size:.8rem;text-align:center;padding:2rem;">No messages yet 👋</div>';return;}
+      snap.forEach(doc=>{
+        const d=doc.data();const me=d.uid===CU.uid;
+        const t=d.time?new Date(d.time.seconds*1000).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):'';
+        const div=document.createElement('div');div.className='msg '+(me?'me':'other');
+        div.innerHTML=`<div class="m-av">${(d.name||'U').charAt(0).toUpperCase()}</div><div><div class="m-sdr">${me?'You':d.name||'User'}</div><div class="m-bbl">${esc(d.text||'')}</div><div class="m-t">${t}</div></div>`;
+        area.appendChild(div);
+      });
+      area.scrollTop=area.scrollHeight;
+    });
+}
+
+async function sendMsg(){
+  if(!curRoom||!CU)return;
+  const inp=document.getElementById('msgInp');const txt=inp.value.trim();
+  if(!txt)return;inp.value='';
+  try{
+    await firebase.firestore().collection('messages').add({
+      roomId:curRoom,uid:CU.uid,name:UD?.name||CU.email,
+      text:txt,time:firebase.firestore.FieldValue.serverTimestamp(),role:UD?.role||'client'
+    });
+    // Alert team via notification + SMS
+    if(UD?.role!=='team'){
+      const notifData={type:'message',userName:UD?.name||CU.email,userEmail:CU.email,
+        userId:CU.uid,room:curRoom,preview:txt.substring(0,80),time:firebase.firestore.FieldValue.serverTimestamp()};
+      firebase.firestore().collection('notifications').add(notifData).catch(()=>{});
+      // INSTANT SMS to all team members
+      alertTeamSMS(`💬 Amol Soft Chat Alert!\nFrom: ${UD?.name||CU.email}\nRoom: ${curRoom}\nMsg: ${txt.substring(0,100)}\nLogin to Amol Soft dashboard to reply`);
+    }
+  }catch(e){toast('Failed to send.');}
+}
+
+function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ── ORDER ─────────────────────────────────────────
+async function submitOrder(){
+  const svc=document.getElementById('oSvc').value;
+  const tit=document.getElementById('oTit').value.trim();
+  const des=document.getElementById('oDes').value.trim();
+  if(!svc||!tit||!des){toast('Fill Service, Title and Description.');return;}
+  const btn=document.getElementById('oBtn');btn.disabled=true;btn.textContent='Submitting...';
+  try{
+    const data={userId:CU.uid,userName:UD?.name||CU.email,userEmail:CU.email,
+      userPhone:UD?.phone||'',service:svc,title:tit,description:des,
+      budget:document.getElementById('oBdg').value,timeline:document.getElementById('oTml').value,
+      priority:document.getElementById('oPri').value,status:'pending',
+      time:firebase.firestore.FieldValue.serverTimestamp()};
+    await firebase.firestore().collection('orders').add(data);
+    
+    // Firestore notification
+    firebase.firestore().collection('notifications').add({type:'order',...data,time:firebase.firestore.FieldValue.serverTimestamp()}).catch(()=>{});
+    
+    // Chat message
+    firebase.firestore().collection('messages').add({
+      roomId:'orders',uid:CU.uid,name:UD?.name||CU.email,
+      text:`📋 New Order: "${tit}" — ${svc} | ${document.getElementById('oPri').value} priority`,
+      time:firebase.firestore.FieldValue.serverTimestamp(),role:'client'
+    }).catch(()=>{});
+    
+    // INSTANT SMS to ALL team members
+    alertTeamSMS(`📋 NEW ORDER ALERT!\nAmol Soft Developing Industry\n\nClient: ${UD?.name||CU.email}\nPhone: ${UD?.phone||'N/A'}\nService: ${svc}\nProject: ${tit}\nPriority: ${document.getElementById('oPri').value}\nBudget: ${document.getElementById('oBdg').value||'N/A'}\n\nLogin to dashboard to respond.`);
+    
+    document.getElementById('oSuc').style.display='block';
+    btn.textContent='✓ Submitted!';
+    loadStats();
+  }catch(e){toast('Failed. Try again.');btn.disabled=false;btn.textContent='✦ Submit Order — Team Gets SMS Alert';}
+}
+
+// ── PROFILE ───────────────────────────────────────
+async function saveProfile(){
+  const fn=document.getElementById('pfName').value.trim();
+  const ln=document.getElementById('plName').value.trim();
+  const phone=document.getElementById('pPhone').value.trim();
+  const bio=document.getElementById('pBio').value.trim();
+  if(!fn){toast('Enter your first name.');return;}
+  const name=fn+(ln?' '+ln:'');
+  try{
+    await firebase.firestore().collection('users').doc(CU.uid).update({
+      name,phone,bio,updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    UD={...UD,name,phone,bio};
+    updateSidebarUI();
+    document.getElementById('profSuc').style.display='block';
+    setTimeout(()=>document.getElementById('profSuc').style.display='none',3000);
+    toast('✅ Profile saved!');
+  }catch(e){document.getElementById('profErr').textContent=e.message;document.getElementById('profErr').style.display='block';}
+}
+
+function uploadPhoto(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    const dataUrl=e.target.result;
+    try{
+      await firebase.firestore().collection('users').doc(CU.uid).update({photo:dataUrl,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+      UD={...UD,photo:dataUrl};
+      updateSidebarUI();
+      toast('✅ Photo updated!');
+    }catch(err){toast('Failed to update photo.');}
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── BILLING ───────────────────────────────────────
+function addItem(){
+  const i=itemCount++;
+  const row=document.createElement('div');row.className='item-row';row.id='item-'+i;
+  row.innerHTML=`<input type="text" style="background:rgba(255,255,255,.05);border:1px solid rgba(99,179,255,.15);border-radius:8px;padding:.5rem .7rem;color:#eef2ff;font-family:'Outfit',sans-serif;font-size:.84rem;outline:none;width:100%;" placeholder="Item description" id="item-desc-${i}"/>
+    <input type="number" style="background:rgba(255,255,255,.05);border:1px solid rgba(99,179,255,.15);border-radius:8px;padding:.5rem .7rem;color:#eef2ff;font-family:'Outfit',sans-serif;font-size:.84rem;outline:none;width:60px;" placeholder="Qty" id="item-qty-${i}" value="1" onchange="calcTotal()"/>
+    <input type="number" style="background:rgba(255,255,255,.05);border:1px solid rgba(99,179,255,.15);border-radius:8px;padding:.5rem .7rem;color:#eef2ff;font-family:'Outfit',sans-serif;font-size:.84rem;outline:none;width:100px;" placeholder="Rate ₹" id="item-rate-${i}" onchange="calcTotal()"/>
+    <span style="color:#8899bb;font-size:.82rem;white-space:nowrap;" id="item-total-${i}">₹0</span>
+    <button onclick="this.parentElement.remove();calcTotal();" style="background:rgba(255,107,138,.1);border:1px solid rgba(255,107,138,.2);color:#ff6b8a;padding:.3rem .6rem;border-radius:7px;cursor:pointer;font-size:.75rem;">✕</button>`;
+  document.getElementById('itemsList').appendChild(row);
+}
+
+function calcTotal(){
+  let total=0;
+  document.querySelectorAll('.item-row').forEach(row=>{
+    const id=row.id.split('-')[1];
+    const qty=parseFloat(document.getElementById('item-qty-'+id)?.value)||0;
+    const rate=parseFloat(document.getElementById('item-rate-'+id)?.value)||0;
+    const t=qty*rate;total+=t;
+    const el=document.getElementById('item-total-'+id);
+    if(el)el.textContent='₹'+t.toLocaleString('en-IN');
+  });
+  document.getElementById('invTotal').textContent='₹'+total.toLocaleString('en-IN');
+  return total;
+}
+
+// ── BILL APPROVAL SYSTEM ─────────────────────────
+async function submitForApproval(){
+  const client=document.getElementById('invClient').value.trim();
+  const phone=document.getElementById('invPhone').value.trim();
+  const project=document.getElementById('invProject').value.trim();
+  if(!client){toast('Enter client name first.');return;}
+  
+  const items=[];
+  document.querySelectorAll('.item-row').forEach(row=>{
+    const id=row.id.split('-')[1];
+    const desc=document.getElementById('item-desc-'+id)?.value||'';
+    const qty=parseFloat(document.getElementById('item-qty-'+id)?.value)||0;
+    const rate=parseFloat(document.getElementById('item-rate-'+id)?.value)||0;
+    if(desc&&rate>0)items.push({desc,qty,rate,total:qty*rate});
+  });
+  if(!items.length){toast('Add at least one item first.');return;}
+  const total=items.reduce((s,i)=>s+i.total,0);
+
+  // Check if current user is Pranav (Chef) — auto approve
+  const isChef=UD?.name?.toLowerCase().includes('pranav')||CU?.email?.includes('pranav');
+  if(isChef){
+    // Chef can approve own invoices
+    document.getElementById('approvalStatus').style.display='none';
+    document.getElementById('sendToClientBtn').style.display='inline-flex';
+    toast('✅ You are the Chef — invoice auto-approved!');
+    return;
+  }
+
+  // Save invoice pending approval to Firestore
+  try{
+    const invNum=document.getElementById('invNum').value||'INV-'+Date.now().toString().slice(-6);
+    await firebase.firestore().collection('pendingInvoices').add({
+      invNum,client,phone,project,items,total,
+      notes:document.getElementById('invNotes').value||'',
+      submittedBy:CU.uid,
+      submittedByName:UD?.name||CU.email,
+      status:'pending',
+      time:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    
+    // Alert Pranav via SMS
+    const msg='🧾 Invoice Approval Needed!\nAmol Soft\n\nClient: '+client+'\nProject: '+project+'\nTotal: ₹'+total.toLocaleString('en-IN')+'\nSubmitted by: '+(UD?.name||CU.email)+'\n\nPlease login to approve.';
+    await fetch('https://www.fast2sms.com/dev/bulkV2?authorization='+FAST2SMS_KEY+'&route=q&message='+encodeURIComponent(msg)+'&flash=0&numbers=8208519190',
+      {method:'GET',headers:{'cache-control':'no-cache'}});
+    
+    document.getElementById('approvalStatus').style.display='block';
+    toast('📤 Sent to Pranav (Chef) for approval via SMS!');
+    
+    // Listen for approval in real-time
+    firebase.firestore().collection('pendingInvoices')
+      .where('submittedBy','==',CU.uid).where('status','==','approved')
+      .onSnapshot(snap=>{
+        if(!snap.empty){
+          document.getElementById('approvalStatus').style.display='none';
+          document.getElementById('sendToClientBtn').style.display='inline-flex';
+          document.getElementById('approvalStatus').textContent='';
+          toast('✅ Pranav approved the invoice! You can now send it to the client.');
+        }
+      });
+  }catch(e){toast('Failed to submit: '+e.message);}
+}
+
+function generateInvoice(shareWA){
+  const client=document.getElementById('invClient').value.trim();
+  const phone=document.getElementById('invPhone').value.trim();
+  const project=document.getElementById('invProject').value.trim();
+  const invNum=document.getElementById('invNum').value;
+  const notes=document.getElementById('invNotes').value;
+  if(!client){toast('Enter client name.');return;}
+  
+  // Collect items
+  const items=[];
+  document.querySelectorAll('.item-row').forEach(row=>{
+    const id=row.id.split('-')[1];
+    const desc=document.getElementById('item-desc-'+id)?.value||'';
+    const qty=parseFloat(document.getElementById('item-qty-'+id)?.value)||0;
+    const rate=parseFloat(document.getElementById('item-rate-'+id)?.value)||0;
+    if(desc&&rate>0)items.push({desc,qty,rate,total:qty*rate});
+  });
+  if(!items.length){toast('Add at least one item with a price.');return;}
+  
+  const total=items.reduce((s,i)=>s+i.total,0);
+  const date=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+  
+  // Generate PDF using jsPDF
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  
+  // Background
+  doc.setFillColor(5,8,16);doc.rect(0,0,210,297,'F');
+  
+  // Header bar
+  doc.setFillColor(79,159,255);doc.rect(0,0,210,2,'F');
+  
+  // Company name
+  doc.setFont('helvetica','bold');doc.setFontSize(22);doc.setTextColor(238,242,255);
+  doc.text('AMOL SOFT',15,22);
+  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(136,153,187);
+  doc.text('DEVELOPING INDUSTRY',15,28);
+  
+  // Invoice title
+  doc.setFont('helvetica','bold');doc.setFontSize(28);doc.setTextColor(0,229,200);
+  doc.text('INVOICE',210-15,22,'right');
+  doc.setFontSize(10);doc.setFont('helvetica','normal');doc.setTextColor(136,153,187);
+  doc.text(invNum,210-15,30,'right');
+  doc.text('Date: '+date,210-15,36,'right');
+  
+  // Divider
+  doc.setDrawColor(79,159,255,0.3);doc.setLineWidth(0.3);doc.line(15,42,195,42);
+  
+  // Bill to
+  doc.setFontSize(8);doc.setTextColor(136,153,187);doc.setFont('helvetica','bold');
+  doc.text('BILL TO',15,52);
+  doc.setFont('helvetica','normal');doc.setFontSize(11);doc.setTextColor(238,242,255);
+  doc.text(client,15,59);
+  if(phone){doc.setFontSize(9);doc.setTextColor(136,153,187);doc.text('Phone: +91 '+phone,15,65);}
+  if(project){doc.setFontSize(9);doc.setTextColor(136,153,187);doc.text('Project: '+project,15,71);}
+  
+  // Table header
+  doc.setFillColor(17,21,39);doc.rect(15,80,180,8,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(79,159,255);
+  doc.text('DESCRIPTION',18,85.5);doc.text('QTY',120,85.5);doc.text('RATE',145,85.5);doc.text('AMOUNT',175,85.5,'right');
+  
+  // Items
+  let y=96;
+  items.forEach((item,idx)=>{
+    if(idx%2===0){doc.setFillColor(12,15,30);doc.rect(15,y-5,180,8,'F');}
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(238,242,255);
+    doc.text(item.desc,18,y);
+    doc.text(item.qty.toString(),120,y);
+    doc.text('₹'+item.rate.toLocaleString('en-IN'),145,y);
+    doc.text('₹'+item.total.toLocaleString('en-IN'),193,y,'right');
+    y+=10;
+  });
+  
+  // Total
+  doc.setDrawColor(0,229,200,0.3);doc.setLineWidth(0.3);doc.line(15,y,195,y);
+  y+=8;
+  doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(136,153,187);doc.text('TOTAL AMOUNT',15,y);
+  doc.setFontSize(14);doc.setTextColor(0,229,200);doc.text('₹'+total.toLocaleString('en-IN'),193,y,'right');
+  
+  // Notes
+  if(notes){
+    y+=15;
+    doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(136,153,187);doc.text('NOTES',15,y);
+    y+=5;doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(200,210,230);
+    const noteLines=doc.splitTextToSize(notes,170);doc.text(noteLines,15,y);
+  }
+  
+  // Footer
+  doc.setFontSize(8);doc.setTextColor(79,159,255);
+  doc.text('Amol Soft Developing Industry · siddhartdahatode62@gmail.com · 9021597349',105,285,'center');
+  doc.setTextColor(136,153,187);doc.text('Thank you for your business!',105,290,'center');
+  
+  // Download
+  const filename=`Invoice-${invNum}-${client.replace(/\s/g,'_')}.pdf`;
+  doc.save(filename);
+  
+  // Share to WhatsApp
+  if(shareWA&&phone){
+    setTimeout(()=>{
+      const msg=`Hi ${client}! 👋\n\nPlease find your invoice from *Amol Soft Developing Industry*.\n\n📋 Invoice: ${invNum}\n📅 Date: ${date}\n💰 Total: ₹${total.toLocaleString('en-IN')}\n📁 Project: ${project||'—'}\n\nThe PDF invoice has been downloaded. Please check with your team.\n\nThank you for choosing us!\n— Amol Soft Developing Industry`;
+      window.open('https://wa.me/91'+phone+'?text='+encodeURIComponent(msg),'_blank');
+    },1000);
+  }
+  
+  // Save invoice to Firestore
+  firebase.firestore().collection('invoices').add({
+    invNum,client,phone,project,items,total,
+    notes,createdBy:CU.uid,createdByName:UD?.name||CU.email,
+    date:new Date().toISOString(),time:firebase.firestore.FieldValue.serverTimestamp()
+  }).catch(()=>{});
+  
+  const suc=document.getElementById('invSuc');
+  suc.textContent=shareWA?'✅ Invoice downloaded! WhatsApp is opening to share with client.':'✅ Invoice PDF downloaded successfully!';
+  suc.style.display='block';
+  setTimeout(()=>suc.style.display='none',5000);
+  toast('Invoice generated! 🎉');
+}
+
+// ── NOTIFICATIONS ─────────────────────────────────
+async function loadNotifs(){
+  const L=document.getElementById('nList');
+  L.innerHTML='<div style="color:#8899bb;font-size:.85rem;">Loading...</div>';
+  try{
+    const isTeam=UD?.role==='team'||ADMIN_EMAILS.includes(CU.email);
+    let snap;
+    if(isTeam){
+      snap=await firebase.firestore().collection('notifications').orderBy('time','desc').limit(50).get();
+    }else{
+      snap=await firebase.firestore().collection('notifications')
+        .where('userId','==',CU.uid).orderBy('time','desc').limit(30).get();
+    }
+    if(snap.empty){L.innerHTML='<div style="color:#8899bb;font-size:.85rem;padding:1rem;">No notifications yet.</div>';return;}
+    const icons={login:'🔐',signup:'👤',order:'📋',message:'💬',visit:'🌐'};
+    const bgs={login:'rgba(79,159,255,.1)',signup:'rgba(0,229,200,.1)',order:'rgba(245,200,66,.1)',message:'rgba(255,107,138,.1)',visit:'rgba(99,179,255,.06)'};
+    L.innerHTML=snap.docs.map(doc=>{
+      const d=doc.data();
+      const t=d.time?new Date(d.time.toDate()).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'—';
+      let title='',sub='';
+      if(d.type==='order'){title=`Order: ${d.title||d.service}`;sub=`${d.service}·${d.priority||'Normal'}`;}
+      else if(d.type==='message'){title=`Message in ${d.room}`;sub=`"${d.preview||''}"`;}
+      else if(d.type==='signup'){title=`New signup: ${d.userName}`;sub=d.userEmail||'';}
+      else if(d.type==='login'){title=`Login: ${d.userName||d.user||''}`;sub=`Role: ${d.role||'client'}`;}
+      else if(d.type==='visit'){title=`Visit: ${d.userName}`;sub=`Role: ${d.role||'client'}`;}
+      return `<div class="ni"><div class="ni-ico" style="background:${bgs[d.type]||'rgba(79,159,255,.06)'}">${icons[d.type]||'🔔'}</div><div class="ni-body"><div class="ni-title">${title}</div><div class="ni-sub">${sub}</div></div><div class="ni-time">${t}</div></div>`;
+    }).join('');
+  }catch(e){L.innerHTML='<div style="color:#ff6b8a;font-size:.85rem;">Could not load. Make sure Firestore is configured.</div>';}
+}
+
+// ── Toast ──────────────────────────────────────

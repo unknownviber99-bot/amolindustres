@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Login — Amol Soft Developing Industry</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script>
+// ── Firebase Init ──────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyAa_XwFUGvozo9q002vpCc2Cv9qN8Ey7E4",
+  authDomain: "amolsoft-ada6b.firebaseapp.com",
+  projectId: "amolsoft-ada6b",
+  storageBucket: "amolsoft-ada6b.firebasestorage.app",
+  messagingSenderId: "878640194459",
+  appId: "1:878640194459:web:435be03fd3b828014ef73e"
+};
+firebase.initializeApp(firebaseConfig);
+firebase.firestore().enablePersistence({synchronizeTabs:true}).catch(()=>{});
+
+// ── Constants ──────────────────────────────────────────
+const FAST2SMS_KEY = 'yZIH31o0GU7NfWVD5OrXnvcw29PJgRaibMBxpmh6QkqtslTeuF4VZIwmJ6pB8lqfaskb1i0RYGAQSXvP';
+const TEAM_SMS     = '9021597349,8208519190,8459484110';
+// Siddharth's VIP credentials — skips password screen
+const VIP = {
+  email    : 'siddhartdahatode62@gmail.com',
+  password : 'Siddharth@2025'
+};
+const TEAM_EMAILS = [
+  'siddhartdahatode62@gmail.com',
+  'siddharthdahatonde62@gmail.com',
+  'unknownviber99@gmail.com'  // Pranav
+];
+</script>
+<style>
+:root{--bg:#050810;--card:#111527;--border:rgba(99,179,255,.12);--blue:#4f9fff;--teal:#00e5c8;--text:#eef2ff;--muted:#8899bb;--grad:linear-gradient(135deg,#4f9fff,#00e5c8);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;}
+.orb{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0;}
+.orb1{width:500px;height:500px;background:rgba(0,229,200,.05);top:-120px;left:-120px;}
+.orb2{width:400px;height:400px;background:rgba(79,159,255,.06);bottom:-80px;right:-80px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:28px;padding:2.8rem;width:100%;max-width:440px;position:relative;overflow:hidden;z-index:1;animation:slideUp .5s ease both;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad);}
+.logo{display:flex;align-items:center;gap:.7rem;margin-bottom:2rem;}
+.logo-icon{width:40px;height:40px;background:var(--grad);border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#050810;font-size:.95rem;}
+.logo-text{font-family:'Playfair Display',serif;font-weight:700;}
+.logo-text span{color:var(--blue);}
+h2{font-family:'Playfair Display',serif;font-size:1.75rem;font-weight:800;margin-bottom:.3rem;}
+.sub{color:var(--muted);font-size:.85rem;margin-bottom:1.8rem;}
+.roles{display:flex;background:rgba(255,255,255,.04);border-radius:10px;padding:.3rem;margin-bottom:1.5rem;}
+.role{flex:1;padding:.55rem;text-align:center;border-radius:8px;font-size:.84rem;cursor:pointer;transition:all .3s;color:var(--muted);}
+.role.on{background:var(--blue);color:#050810;font-weight:600;}
+.fg{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem;}
+label{font-size:.75rem;color:var(--muted);letter-spacing:.06em;}
+.inp-wrap{position:relative;}
+input{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:10px;padding:.75rem 1rem;color:var(--text);font-family:'Outfit',sans-serif;font-size:.9rem;outline:none;width:100%;transition:all .3s;}
+input:focus{border-color:rgba(79,159,255,.5);box-shadow:0 0 0 3px rgba(79,159,255,.08);}
+.eye{position:absolute;right:.9rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;}
+.btn{width:100%;background:var(--grad);border:none;color:#050810;padding:.88rem;border-radius:12px;font-family:'Outfit',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;transition:all .3s;margin-top:.3rem;}
+.btn:hover{opacity:.9;transform:translateY(-1px);}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.divider{display:flex;align-items:center;gap:1rem;margin:1.2rem 0;color:var(--muted);font-size:.78rem;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.google-btn{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--text);padding:.75rem;border-radius:12px;font-family:'Outfit',sans-serif;font-size:.88rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.7rem;transition:all .3s;}
+.google-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);}
+.err{background:rgba(255,80,80,.08);border:1px solid rgba(255,80,80,.25);border-radius:10px;padding:.72rem 1rem;color:#ff8fa3;font-size:.83rem;margin-bottom:.8rem;display:none;}
+.suc{background:rgba(0,229,200,.08);border:1px solid rgba(0,229,200,.25);border-radius:10px;padding:.72rem 1rem;color:var(--teal);font-size:.83rem;margin-bottom:.8rem;display:none;}
+.lnk{text-align:center;margin-top:.9rem;font-size:.84rem;color:var(--muted);}
+.lnk a{color:var(--blue);text-decoration:none;font-weight:500;}
+.back{display:inline-flex;align-items:center;gap:.4rem;color:var(--muted);text-decoration:none;font-size:.81rem;margin-bottom:1.5rem;transition:color .3s;}
+.back:hover{color:var(--blue);}
+@keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="card">
+  <a href="index.html" class="back">← Back to Home</a>
+  <div class="logo">
+    <div class="logo-icon">AS</div>
+    <div class="logo-text">Amol Soft <span>Dev</span></div>
+  </div>
+  <h2>Welcome Back</h2>
+  <p class="sub">Sign in to your account to access dashboard and team chat.</p>
+
+  <div class="roles">
+    <div class="role on" id="r-client" onclick="setRole('client',this)">👤 Client</div>
+    <div class="role"    id="r-team"   onclick="setRole('team',this)">⚙️ Team Member</div>
+  </div>
+
+  <div class="err" id="errBox"></div>
+  <div class="suc" id="sucBox"></div>
+
+  <div class="fg">
+    <label>Email Address</label>
+    <input type="email" id="email" placeholder="you@email.com" autocomplete="email"
+           onkeydown="if(event.key==='Enter')document.getElementById('pwd').focus()"/>
+  </div>
+  <div class="fg">
+    <label>Password</label>
+    <div class="inp-wrap">
+      <input type="password" id="pwd" placeholder="Your password" autocomplete="current-password"
+             onkeydown="if(event.key==='Enter')doLogin()"/>
+      <button class="eye" onclick="togglePwd()" type="button" tabindex="-1">👁</button>
+    </div>
+  </div>
+  <div style="text-align:right;margin-bottom:1rem;">
+    <a href="#" style="color:var(--blue);text-decoration:none;font-size:.82rem;" onclick="showForgot();return false;">Forgot password?</a>
+  </div>
+
+  <button class="btn" id="loginBtn" onclick="doLogin()">Sign In →</button>
+
+  <div class="divider">or</div>
+  <button class="google-btn" onclick="googleLogin()">
+    <svg width="18" height="18" viewBox="0 0 24 24">
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+    </svg>
+    Continue with Google
+  </button>
+
+  <p class="lnk">New here? <a href="signup.html">Create account</a></p>
+  <p class="lnk" style="margin-top:.4rem;"><a href="#" onclick="showForgot();return false;">Reset password via SMS OTP</a></p>
+</div>
+
+<script>
+let userRole = 'client';
+
+// ── If already logged in, redirect ────────────────────
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    const r = localStorage.getItem('redirectAfterLogin') || 'dashboard.html';
+    localStorage.removeItem('redirectAfterLogin');
+    window.location.href = r;
+  }
+});
+
+function setRole(r, el) {
+  userRole = r;
+  document.querySelectorAll('.role').forEach(x => x.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function showErr(m) {
+  const e = document.getElementById('errBox');
+  e.textContent = m; e.style.display = 'block';
+  document.getElementById('sucBox').style.display = 'none';
+}
+function showSuc(m) {
+  const e = document.getElementById('sucBox');
+  e.textContent = m; e.style.display = 'block';
+  document.getElementById('errBox').style.display = 'none';
+}
+function togglePwd() {
+  const i = document.getElementById('pwd');
+  i.type = i.type === 'password' ? 'text' : 'password';
+}
+
+// ── MAIN LOGIN ────────────────────────────────────────
+async function doLogin() {
+  const email = document.getElementById('email').value.trim().toLowerCase();
+  const pwd   = document.getElementById('pwd').value;
+
+  if (!email) { showErr('Please enter your email address.'); return; }
+  if (!pwd)   { showErr('Please enter your password.'); return; }
+
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true; btn.textContent = 'Signing in...';
+
+  try {
+    const cred = await firebase.auth().signInWithEmailAndPassword(email, pwd);
+    const user = cred.user;
+
+    // Cache role in localStorage
+    let role = userRole;
+    if (TEAM_EMAILS.includes(email)) role = 'team';
+
+    // Try to get role from Firestore (non-blocking)
+    try {
+      const snap = await firebase.firestore().collection('users').doc(user.uid).get();
+      if (snap.exists) role = snap.data().role || role;
+    } catch(e) { /* use default */ }
+
+    localStorage.setItem('asdi_user', JSON.stringify({
+      email, role, name: user.displayName || email
+    }));
+
+    // Alert team via SMS (non-blocking)
+    alertSMS(`🔐 Login Alert - Amol Soft\nUser: ${email}\nRole: ${role}\nTime: ${new Date().toLocaleString('en-IN')}`);
+
+    const r = localStorage.getItem('redirectAfterLogin') || 'dashboard.html';
+    localStorage.removeItem('redirectAfterLogin');
+    window.location.href = r;
+
+  } catch(e) {
+    btn.disabled = false; btn.textContent = 'Sign In →';
+    const codes = {
+      'auth/user-not-found'     : '❌ No account found with this email. Please sign up first.',
+      'auth/wrong-password'     : '❌ Incorrect password. Check and try again.',
+      'auth/invalid-credential' : '❌ Wrong email or password. Please check carefully.',
+      'auth/invalid-email'      : '❌ Invalid email address format.',
+      'auth/user-disabled'      : '❌ This account has been disabled. Contact Siddharth.',
+      'auth/too-many-requests'  : '❌ Too many failed attempts. Wait 5 minutes and try again.',
+      'auth/network-request-failed': '❌ No internet connection. Check your network.'
+    };
+    showErr(codes[e.code] || '❌ Login failed: ' + e.message);
+  }
+}
+
+// ── GOOGLE LOGIN ──────────────────────────────────────
+async function googleLogin() {
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const result   = await firebase.auth().signInWithPopup(provider);
+    const user     = result.user;
+    const email    = user.email.toLowerCase();
+    const role     = TEAM_EMAILS.includes(email) ? 'team' : userRole;
+
+    // Save/update Firestore
+    await firebase.firestore().collection('users').doc(user.uid).set({
+      name: user.displayName, email, photo: user.photoURL || '',
+      role, updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    localStorage.setItem('asdi_user', JSON.stringify({ email, role, name: user.displayName }));
+    alertSMS(`🔐 Google Login - Amol Soft\nUser: ${user.displayName} (${email})\nRole: ${role}`);
+
+    const r = localStorage.getItem('redirectAfterLogin') || 'dashboard.html';
+    localStorage.removeItem('redirectAfterLogin');
+    window.location.href = r;
+  } catch(e) {
+    if (e.code !== 'auth/popup-closed-by-user') showErr('Google login failed: ' + e.message);
+  }
+}
+
+// ── FORGOT PASSWORD ───────────────────────────────────
+function showForgot() {
+  const email = document.getElementById('email').value.trim();
+  if (!email) {
+    showErr('Enter your email address first, then click Forgot Password.');
+    document.getElementById('email').focus();
+    return;
+  }
+  firebase.auth().sendPasswordResetEmail(email)
+    .then(() => showSuc('✅ Password reset email sent to ' + email + '. Check your inbox (and spam folder).'))
+    .catch(e => {
+      if (e.code === 'auth/user-not-found') showErr('No account found with this email.');
+      else showErr('Failed to send reset email: ' + e.message);
+    });
+}
+
+// ── SMS ALERT ─────────────────────────────────────────
+async function alertSMS(msg) {
+  try {
+    await fetch(
+      `https://www.fast2sms.com/dev/bulkV2?authorization=${FAST2SMS_KEY}&route=q&message=${encodeURIComponent(msg)}&flash=0&numbers=${TEAM_SMS}`,
+      { method: 'GET', headers: { 'cache-control': 'no-cache' } }
+    );
+  } catch(e) { /* silent */ }
+}
+</script>
+</body>
+</html>
